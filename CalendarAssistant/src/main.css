@@ -1,0 +1,59 @@
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f7f7f7;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Calendar area*/
+.calendar-container {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.calendar-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* Placeholder calendar */
+.calendar-box {
+  height: 500px; /* Adjust as needed */
+  background: rgb(253, 178, 222);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 10px;
+}
+
+.calendar-placeholder {
+  color: #777;
+  font-size: 16px;
+}
+
+/* Bottom bar */
+.bottom-nav {
+  height: 70px;
+  background: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #444;
+  padding: 10px;
+  flex: 1;
+}
+
+.nav-btn:hover {
+  background: #eee;
+}
