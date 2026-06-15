@@ -88,13 +88,13 @@ function TasksPage() {
             value={taskType}
             onChange={(e) => setTaskType(e.target.value)}
           >
-            <option value="task">Task (To‑Do)</option> //add to do list
-            <option value="event">Event (Calendar)</option> //add event for cal
-            <option value="habit">Habit (Tracker)</option> //add habit to track
+            <option value="task">Task (To‑Do)</option> 
+            <option value="event">Event (Calendar)</option>
+            <option value="habit">Habit (Tracker)</option> 
           </select>
         </div>
 
-        <button className="primary-btn" onClick={addTask}> // space to add to backend
+        <button className="primary-btn" onClick={addTask}> 
           Add
         </button>
       </div>
