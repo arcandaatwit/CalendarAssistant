@@ -1,134 +1,102 @@
+/* 🌸 Pastel Theme Variables */
 :root {
-  /*new color system */
+  --bg: #faf9fc;
+  --card-bg: #ffffff;
   --text: #6b6375;
   --text-h: #3a3340;
-  --bg: #faf9fc;
-  --border: #e8e5ef;
-  --code-bg: #f6f4fa;
-
-  /* color accents */
-  --accent: #b9a6ff; 
+  --accent: #b9a6ff;
   --accent-bg: rgba(185, 166, 255, 0.18);
-  --accent-border: rgba(185, 166, 255, 0.45);
-
-  --accent-2: #ffd6e8;
-  --accent-2-bg: rgba(255, 214, 232, 0.25);
-
-  --shadow:
-    0 4px 12px rgba(0, 0, 0, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.04);
-
-  /* Typography keep ?*/
-  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-          "Segoe UI", Roboto, sans-serif;
-  --heading: var(--sans);
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/150% var(--sans);
-  letter-spacing: 0.2px;
-  color-scheme: light;
-  color: var(--text);
-  background: var(--bg);
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-/*Dark style? */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #cfcbd6;
-    --text-h: #ffffff;
-    --bg: #1b1a20;
-    --border: #2d2b33;
-    --code-bg: #24232b;
-
-    --accent: #c9b5ff;
-    --accent-bg: rgba(201, 181, 255, 0.2);
-    --accent-border: rgba(201, 181, 255, 0.5);
-
-    --shadow:
-      0 4px 12px rgba(0, 0, 0, 0.4),
-      0 1px 3px rgba(0, 0, 0, 0.3);
-  }
+  --radius: 16px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.06);
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
 }
 
 body {
-  margin: 0;
   background: var(--bg);
+  font-family: var(--sans);
+  margin: 0;
 }
 
-/* iPhone‑style containers*/
-#root {
+/* grid  */
+.layout-container {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  grid-auto-rows: 60px;
+  gap: 12px;
   width: 100%;
-  max-width: 480px; 
+  max-width: 1400px;
   margin: 0 auto;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  border-inline: 1px solid var(--border);
-  background: var(--bg);
-  box-sizing: border-box;
-}
-/*text and formatt*/
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 600;
-  color: var(--text-h);
+  padding: 20px;
 }
 
-h1 {
-  font-size: 42px;
-  letter-spacing: -1px;
-  margin: 28px 0;
-}
-
-h2 {
-  font-size: 22px;
-  margin-bottom: 10px;
-}
-
-p {
-  margin: 0;
-}
-
-code {
-  font-family: var(--mono);
-  background: var(--code-bg);
-  padding: 4px 8px;
-  border-radius: 6px;
-  color: var(--text-h);
-}
-/* for task page specific*/
-.task-row {
+.grid-item {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  background-color: var(--card-bg);
+  color: var(--text);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow);
 }
 
-.task-done {
-  text-decoration: line-through;
-  opacity: 0.6;
+/* header  */
+.item-0 {
+  display: flex;
+  grid-column: 1 / span 24;
+  grid-row: 1 / span 1;
+}
+@media (min-width: 768px) { .item-0 { grid-row: 1 / span 2; } }
+@media (min-width: 1024px) { .item-0 { grid-column: 5 / span 16; grid-row: 1 / span 1; } }
+
+.header-bar h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
 }
 
-.task-meta {
-  margin-left: 28px;
-  font-size: 14px;
-  color: var(--text-light);
-}
+/* middle page calendar etc */
+.item-1 {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 20px;
+  overflow-y: auto;
 
-.task-tag {
-  display: inline-block;
-  margin-top: 4px;
-  padding: 4px 10px;
-  background: var(--accent-bg);
+  grid-column: 1 / span 24;
+  grid-row: 2 / span 10;
+}
+@media (min-width: 768px) { .item-1 { grid-row: 3 / span 6; } }
+@media (min-width: 1024px) { .item-1 { grid-column: 3 / span 19; grid-row: 2 / span 8; } }
+
+/* Bottom Navigation */
+.item-2 {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 0;
+
+  grid-column: 1 / span 24;
+  grid-row: 12 / span 1;
+}
+@media (min-width: 768px) { .item-2 { grid-column: 7 / span 14; grid-row: 9 / span 1; } }
+@media (min-width: 1024px) { .item-2 { grid-column: 6 / span 15; grid-row: 10 / span 1; } }
+
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text);
+  padding: 8px 14px;
   border-radius: 12px;
-  font-size: 12px;
+  transition: 0.2s ease;
+}
+
+.nav-btn:hover {
+  background: var(--accent-bg);
   color: var(--accent);
 }
