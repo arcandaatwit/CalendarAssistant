@@ -1,52 +1,133 @@
 import React, { useState } from "react";
-import './index.css';
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import "./index.css";
 
 function TasksPage() {
-  const [task, setTask] = useState("");
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDate, setTaskDate] = useState("");
+  const [taskTime, setTaskTime] = useState("");
+  const [taskLocation, setTaskLocation] = useState("");
+  const [taskType, setTaskType] = useState("task"); // option of making task or habit 
+
   const [tasks, setTasks] = useState([]);
 
   const addTask = () => {
-    if (!task.trim()) return;
-    setTasks([...tasks, task]);
-    setTask("");
+    if (!taskTitle.trim()) return;
+
+    const newTask = {
+      id: Date.now(),
+      title: taskTitle,
+      date: taskDate,
+      time: taskTime,
+      location: taskLocation,
+      type: taskType,
+      completed: false,
+    };
+
+    setTasks([...tasks, newTask]);
+
+    // clear fields
+    setTaskTitle("");
+    setTaskDate("");
+    setTaskTime("");
+    setTaskLocation("");
+    setTaskType("task");
+  };
+
+  const toggleComplete = (id) => {
+    setTasks(
+      tasks.map((t) =>
+        t.id === id ? { ...t, completed: !t.completed } : t
+      )
+    );
   };
 
   return (
     <div className="app-container">
-      {/* Tasks Section */}
-      <div className="tasks-container">
-        <h2 className="tasks-title">Your Tasks</h2>
+      <h2 className="page-title">Create a Task</h2>
 
-        <div className="tasks-box">
-          <div className="input-row">
-            <input
-              className="task-input"
-              type="text"
-              placeholder="Enter a new task..."
-              value={task}
-              onChange={(e) => setTask(e.target.value)}
-            />
-            <button className="add-btn" onClick={addTask}>
-              Add
-            </button>
-          </div>
-
-          <div className="task-list">
-            {tasks.length === 0 && (
-              <p className="empty-text">No tasks yet — addadd one above.</p>
-            )}
-
-            {tasks.map((t, index) => (
-              <div key={index} className="task-item">
-                {t}
-              </div>
-            ))}
-          </div>
+      <div className="card-box">
+        <div className="input-row">
+          <input
+            className="input-field"
+            type="text"
+            placeholder="Task title..."
+            value={taskTitle}
+            onChange={(e) => setTaskTitle(e.target.value)}
+          />
         </div>
+
+        <div className="input-row">
+          <input
+            className="input-field"
+            type="date"
+            value={taskDate}
+            onChange={(e) => setTaskDate(e.target.value)}
+          />
+          <input
+            className="input-field"
+            type="time"
+            value={taskTime}
+            onChange={(e) => setTaskTime(e.target.value)}
+          />
+        </div>
+
+        <div className="input-row">
+          <input
+            className="input-field"
+            type="text"
+            placeholder="Location (optional)"
+            value={taskLocation}
+            onChange={(e) => setTaskLocation(e.target.value)}
+          />
+        </div>
+
+        <div className="input-row">
+          <select
+            className="input-field"
+            value={taskType}
+            onChange={(e) => setTaskType(e.target.value)}
+          >
+            <option value="task">Task (To‑Do)</option> //add to do list
+            <option value="event">Event (Calendar)</option> //add event for cal
+            <option value="habit">Habit (Tracker)</option> //add habit to track
+          </select>
+        </div>
+
+        <button className="primary-btn" onClick={addTask}> // space to add to backend
+          Add
+        </button>
       </div>
 
-      {/* Bottom Navigation */}
+      <h2 className="page-title">Your Tasks</h2>
+
+      <div className="card-box">
+        {tasks.length === 0 && (
+          <p className="empty-text">No tasks yet — add one above.</p>
+        )}
+
+        {tasks.map((t) => (
+          <div key={t.id} className="task-item">
+            <label className="task-row">
+              <input
+                type="checkbox"
+                checked={t.completed}
+                onChange={() => toggleComplete(t.id)}
+              />
+              <span className={t.completed ? "task-done" : ""}>
+                {t.title}
+              </span>
+            </label>
+
+            <div className="task-meta">
+              {t.date && <p>{t.date}</p>}
+              {t.time && <p>{t.time}</p>}
+              {t.location && <p>{t.location}</p>}
+              <p className="task-tag">{t.type}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="bottom-nav">
         <button className="nav-btn">Home</button>
         <button className="nav-btn">Calendar</button>
@@ -56,4 +137,5 @@ function TasksPage() {
     </div>
   );
 }
+
 export default TasksPage;

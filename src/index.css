@@ -105,3 +105,30 @@ code {
   border-radius: 6px;
   color: var(--text-h);
 }
+/* for task page specific*/
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-meta {
+  margin-left: 28px;
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.task-tag {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 4px 10px;
+  background: var(--accent-bg);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--accent);
+}
