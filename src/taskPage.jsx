@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./index.css";
+import Layout from "./Layout";
 
 function TasksPage() {
   const [taskTitle, setTaskTitle] = useState("");
