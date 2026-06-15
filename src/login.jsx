@@ -9,7 +9,7 @@ function LoginPage() {
 
   const handleLogin = () => {
     // Authorize with google??
-    if (username && password) {
+    if (username && password){
       navigate("/main");
     } else {
       alert("Please enter username and password");
