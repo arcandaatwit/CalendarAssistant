@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "./app.css";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 
-export default function TasksPage() {
+function TasksPage() {
   const [task, setTask] = useState("");
   const [tasks, setTasks] = useState([]);
 
