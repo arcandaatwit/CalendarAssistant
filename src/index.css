@@ -1,4 +1,4 @@
-/* 🌸 Pastel Theme Variables */
+/* theme variables */
 :root {
   --bg: #faf9fc;
   --card-bg: #ffffff;
@@ -12,12 +12,13 @@
 }
 
 body {
+  margin: 0;
   background: var(--bg);
   font-family: var(--sans);
-  margin: 0;
+  color: var(--text);
 }
 
-/* grid  */
+/* grid */
 .layout-container {
   display: grid;
   grid-template-columns: repeat(24, 1fr);
@@ -42,7 +43,7 @@ body {
   box-shadow: var(--shadow);
 }
 
-/* header  */
+/* top setting */
 .item-0 {
   display: flex;
   grid-column: 1 / span 24;
@@ -58,7 +59,7 @@ body {
   margin: 0;
 }
 
-/* middle page calendar etc */
+/* main setting */
 .item-1 {
   display: flex;
   flex-direction: column;
@@ -73,7 +74,7 @@ body {
 @media (min-width: 768px) { .item-1 { grid-row: 3 / span 6; } }
 @media (min-width: 1024px) { .item-1 { grid-column: 3 / span 19; grid-row: 2 / span 8; } }
 
-/* Bottom Navigation */
+/* bottom nav tool */
 .item-2 {
   display: flex;
   justify-content: space-around;
@@ -99,4 +100,11 @@ body {
 .nav-btn:hover {
   background: var(--accent-bg);
   color: var(--accent);
+}
+
+/* share styles */
+.page-content h2 {
+  font-size: 22px;
+  color: var(--text-h);
+  margin-bottom: 12px;
 }
