@@ -4,7 +4,6 @@ import MainPage from "./main";
 import AddEventPage from "./addEvent";
 import Tasks from "./taskPage";
 import './index.css';
-import Layout from "./Layout";
 
 function App() {
   return (
