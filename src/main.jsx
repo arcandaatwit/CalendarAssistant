@@ -1,7 +1,6 @@
 import React from "react";
 import {Link} from "react-router-dom";
 import './index.css';
-import Layout from "./Layout";
 
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
