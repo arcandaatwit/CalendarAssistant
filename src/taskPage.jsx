@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./app.css";
+import './index.css';
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 function TasksPage() {
@@ -56,4 +56,4 @@ function TasksPage() {
     </div>
   );
 }
-export default Tasks;
+export default TasksPage;

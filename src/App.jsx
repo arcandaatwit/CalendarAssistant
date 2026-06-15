@@ -3,6 +3,7 @@ import LoginPage from "./login";
 import MainPage from "./main";
 import AddEventPage from "./addEvent";
 import Tasks from "./taskPage";
+import './index.css';
 
 function App() {
   return (
