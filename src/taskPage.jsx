@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "./index.css";
 
 function TasksPage() {
@@ -129,9 +130,9 @@ function TasksPage() {
       </div>
 
       <div className="bottom-nav">
-        <button className="nav-btn">Home</button>
-        <button className="nav-btn">Calendar</button>
-        <button className="nav-btn">Tasks</button>
+        <Link to="/main"     className="nav-btn">Calendar</Link>
+        <Link to="/addEvent" className="nav-btn">Event</Link>
+        <Link to="/taskPage" className="nav-btn active">Tasks</Link>
         <button className="nav-btn">Profile</button>
       </div>
     </div>
