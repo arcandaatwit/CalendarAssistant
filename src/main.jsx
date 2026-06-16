@@ -1,15 +1,13 @@
-import React from "react";
-import {Link} from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import './index.css';
 
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import enUS from "date-fns/locale/en-US";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 
-// Setup datetime for in us
-const locales = {
-  "en-US": enUS,
-};
+const locales = { "en-US": enUS };
 
 const localizer = dateFnsLocalizer({
   format,
@@ -19,7 +17,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-//Events for google calendar sample for now
+// sample events — replace with google calendar api data later
 const events = [
   {
     title: "Sample Event",
@@ -28,32 +26,50 @@ const events = [
   },
 ];
 
+const VIEWS = ["month", "week", "work_week", "day"];
+const VIEW_LABELS = { month: "Month", week: "Week", work_week: "3 Day", day: "Day" };
+
 export default function MainPage() {
+  const [viewIndex, setViewIndex] = useState(0);
+  const location = useLocation();
+
+  const currentView = VIEWS[viewIndex];
+
+  const cycleView = () => {
+    setViewIndex((prev) => (prev + 1) % VIEWS.length);
+  };
+
   return (
     <div className="app-container">
-      {/* Calendar Section */}
-      <div className="calendar-container">
-        <h2 className="calendar-title">Your Calendar</h2>
 
+      <div className="header-bar">
+        <h1>Calendar Assistant</h1>
+      </div>
+
+      <div className="page-content">
         <div className="calendar-box">
           <Calendar
             localizer={localizer}
             events={events}
             startAccessor="start"
             endAccessor="end"
+            view={currentView}
+            onView={(v) => setViewIndex(VIEWS.indexOf(v))}
+            views={VIEWS}
             style={{ height: "100%", width: "100%" }}
-            views={["month"]} // Only show month view
           />
         </div>
       </div>
 
-      {/* Bottom Navigation */}
       <div className="bottom-nav">
-        <Link to="/main" className="nav-btn">Home</Link>
-        <Link to="/main" className="nav-btn">Calendar</Link>
-        <Link to="/taskPage" className="nav-btn">Tasks</Link>
+        <button className="nav-btn active" onClick={cycleView}>
+          {VIEW_LABELS[currentView]}
+        </button>
+        <Link to="/addEvent" className={`nav-btn ${location.pathname === "/addEvent" ? "active" : ""}`}>Event</Link>
+        <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Tasks</Link>
         <button className="nav-btn">Profile</button>
       </div>
+
     </div>
   );
 }
