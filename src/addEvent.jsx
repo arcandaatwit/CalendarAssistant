@@ -2,14 +2,24 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import './index.css';
 
+const CATEGORIES = ["Work", "School", "Personal", "Kids", "Health", "Other"];
+
+const PRIORITY_COLORS = {
+  high:   "#d33636",
+  medium: "#f7b731",
+  low:    "#688bf2",
+};
+
 export default function AddEventPage() {
   const location = useLocation();
 
-  const [eventTitle, setEventTitle] = useState("");
-  const [eventDate, setEventDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [eventTitle, setEventTitle]         = useState("");
+  const [eventDate, setEventDate]           = useState("");
+  const [startTime, setStartTime]           = useState("");
+  const [endTime, setEndTime]               = useState("");
   const [eventDescription, setEventDescription] = useState("");
+  const [category, setCategory]             = useState("Personal");
+  const [priority, setPriority]             = useState("medium");
 
   const [events, setEvents] = useState([]);
 
@@ -20,20 +30,33 @@ export default function AddEventPage() {
       id: Date.now(),
       title: eventTitle,
       date: eventDate,
-      startTime: startTime,
-      endTime: endTime,
+      startTime,
+      endTime,
       description: eventDescription,
+      category,
+      priority,
     };
 
     setEvents([...events, newEvent]);
 
-    // clear fields
     setEventTitle("");
     setEventDate("");
     setStartTime("");
     setEndTime("");
     setEventDescription("");
+    setCategory("Personal");
+    setPriority("medium");
   };
+
+  const deleteEvent = (id) => {
+    setEvents(events.filter((e) => e.id !== id));
+  };
+
+  // sort by priority: high first
+  const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
+  const sortedEvents = [...events].sort(
+    (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
+  );
 
   return (
     <div className="app-container">
@@ -43,7 +66,7 @@ export default function AddEventPage() {
       </div>
 
       <div className="page-content">
-        <h2 className="page-title">Add an Event</h2>
+        <h2 className="page-title">Events</h2>
 
         <div className="card-box">
           <div className="input-row">
@@ -80,6 +103,43 @@ export default function AddEventPage() {
             />
           </div>
 
+          {/* category */}
+          <div className="input-row">
+            <select
+              className="input-field"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* priority */}
+          <div className="input-row" style={{ gap: "8px" }}>
+            {["high", "medium", "low"].map((p) => (
+              <button
+                key={p}
+                onClick={() => setPriority(p)}
+                style={{
+                  flex: 1,
+                  padding: "8px",
+                  borderRadius: "10px",
+                  border: `2px solid ${PRIORITY_COLORS[p]}`,
+                  background: priority === p ? PRIORITY_COLORS[p] : "transparent",
+                  color: priority === p ? "white" : PRIORITY_COLORS[p],
+                  fontFamily: "inherit",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  fontWeight: priority === p ? "600" : "400",
+                }}
+              >
+                {p.charAt(0).toUpperCase() + p.slice(1)}
+              </button>
+            ))}
+          </div>
+
           <div className="input-row">
             <textarea
               className="input-field"
@@ -96,35 +156,57 @@ export default function AddEventPage() {
           </button>
         </div>
 
-        <h2 className="page-title">Your Events</h2>
+        {sortedEvents.length > 0 && (
+          <>
+            <h2 className="page-title">Your Events</h2>
+            <div className="card-box">
+              {sortedEvents.map((e) => (
+                <div
+                  key={e.id}
+                  className="task-item"
+                  style={{ borderLeft: `4px solid ${PRIORITY_COLORS[e.priority]}`, paddingLeft: "10px" }}
+                >
+                  <div className="task-row" style={{ justifyContent: "space-between" }}>
+                    <span style={{ fontWeight: "500", color: "var(--text-h)" }}>{e.title}</span>
+                    <button
+                      className="link-btn"
+                      style={{ fontSize: "12px", padding: "0" }}
+                      onClick={() => deleteEvent(e.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
 
-        <div className="card-box">
-          {events.length === 0 && (
-            <p className="empty-text">No events yet — add one above.</p>
-          )}
-
-          {events.map((e) => (
-            <div key={e.id} className="task-item">
-              <div className="task-row">
-                <span>{e.title}</span>
-              </div>
-
-              <div className="task-meta">
-                {e.date && <p>{e.date}</p>}
-                {(e.startTime || e.endTime) && (
-                  <p>{e.startTime} — {e.endTime}</p>
-                )}
-                {e.description && <p>{e.description}</p>}
-              </div>
+                  <div className="task-meta">
+                    <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                      <span className="task-tag">{e.category}</span>
+                      <span
+                        className="task-tag"
+                        style={{ background: PRIORITY_COLORS[e.priority] + "22", color: PRIORITY_COLORS[e.priority] }}
+                      >
+                        {e.priority}
+                      </span>
+                    </div>
+                    {e.date && <p>{e.date}{(e.startTime || e.endTime) ? ` · ${e.startTime} — ${e.endTime}` : ""}</p>}
+                    {e.description && <p>{e.description}</p>}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
+
+        {events.length === 0 && (
+          <div className="card-box">
+            <p className="empty-text">No events yet — add one above.</p>
+          </div>
+        )}
       </div>
 
       <div className="bottom-nav">
         <Link to="/main"     className="nav-btn">Calendar</Link>
         <Link to="/addEvent" className="nav-btn active">Event</Link>
-        <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Tasks</Link>
+        <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Task</Link>
         <button className="nav-btn">Profile</button>
       </div>
 

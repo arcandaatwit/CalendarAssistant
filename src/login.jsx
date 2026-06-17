@@ -13,7 +13,7 @@ function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const googleLogin = useGoogleLogin({
-    scope: "https://www.googleapis.com/auth/calendar.readonly",
+    scope: "https://www.googleapis.com/auth/calendar.readonly", //read only access??
     onSuccess: (tokenResponse) => {
       localStorage.setItem("access_token", tokenResponse.access_token);
       navigate("/main");
@@ -23,16 +23,30 @@ function LoginPage() {
     },
   });
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       alert("Please fill in all fields");
       return;
     }
-    // TODO: send to backend POST /auth/login
-    alert("Login not connected to backend yet");
+    try {
+      const res = await fetch("http://localhost:5000/auth/login", {//proper access point???
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Login failed");
+        return;
+      }
+      localStorage.setItem("token", data.token);
+      navigate("/main");
+    } catch (err) {
+      alert("Could not reach the server");
+    }
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!name || !email || !password || !confirmPassword) {
       alert("Please fill in all fields");
       return;
@@ -41,8 +55,22 @@ function LoginPage() {
       alert("Passwords do not match");
       return;
     }
-    // TODO: send to backend POST /auth/register
-    alert("Register not connected to backend yet");
+    try {
+      const res = await fetch("http://localhost:5000/auth/register", { //access point??
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Registration failed");
+        return;
+      }
+      alert("Account created! Please sign in.");
+      setView("login");
+    } catch (err) {
+      alert("Could not reach the server");
+    }
   };
 
   if (view === "login") {
@@ -137,7 +165,7 @@ function LoginPage() {
     );
   }
 
-  // main view — three options
+  // main view 
   return (
     <div className="login-container">
       <h2>Calendar Assistant</h2>
