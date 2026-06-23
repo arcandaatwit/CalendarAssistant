@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useSettings } from "./App";
 import './index.css';
 
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
@@ -24,6 +25,15 @@ export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
   const [events, setEvents] = useState([]);
   const location = useLocation();
+  const { events } = useSettings();
+
+  const calendarEvents = events
+    .filter((e) => e.date)
+    .map((e) => {
+      const start = new Date(`${e.date}T${e.startTime || "00:00"}`);
+      const end = e.endTime ? new Date(`${e.date}T${e.endTime}`) : new Date(start.getTime() + 60 * 60000);
+      return { title: e.title, start, end };
+    });
 
   const currentView = VIEWS[viewIndex];
 
@@ -65,7 +75,7 @@ export default function MainPage() {
         <div className="calendar-box">
           <Calendar
             localizer={localizer}
-            events={events}
+            events={calendarEvents}
             startAccessor="start"
             endAccessor="end"
             view={currentView}
@@ -82,7 +92,7 @@ export default function MainPage() {
         </button>
         <Link to="/addEvent" className={`nav-btn ${location.pathname === "/addEvent" ? "active" : ""}`}>Event</Link>
         <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Tasks</Link>
-        <button className="nav-btn">Profile</button>
+        <Link to="/profile" className={`nav-btn ${location.pathname === "/profile" ? "active" : ""}`}>Profile</Link>
       </div>
 
     </div>
