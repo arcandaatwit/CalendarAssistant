@@ -17,7 +17,6 @@ export default function Layout({ children }) {
         <button className="nav-btn">Home</button>
         <button className="nav-btn">Calendar</button>
         <button className="nav-btn">Tasks</button>
-        <button className="nav-btn">Habits</button>
         <button className="nav-btn">Profile</button>
       </div>
 
