@@ -8,3 +8,22 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP   
 
 );
+
+CREATE TABLE IF NOT EXISTS tasks (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  location VARCHAR(255),
+  priority ENUM('low','medium','high') DEFAULT 'medium',
+  flag ENUM('none','family','kids','pets','work','school','health','personal','shopping','finance') DEFAULT 'none',
+  deadline DATETIME,
+  status ENUM('pending','in_progress','completed') DEFAULT 'pending',
+  google_task_id VARCHAR(255),
+  google_status ENUM('needsAction','completed') DEFAULT 'needsAction',
+  google_due DATETIME,
+  google_updated_at DATETIME,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
