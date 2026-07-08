@@ -23,22 +23,48 @@ export default function AddEventPage() {
 
   const [events, setEvents] = useState([]);
 
-  const addEvent = () => {
-    if (!eventTitle.trim()) return;
+ const addEvent = async () => {
+  if (!eventTitle.trim()) return;
 
-    const newEvent = {
-      id: Date.now(),
-      title: eventTitle,
-      date: eventDate,
-      startTime,
-      endTime,
-      description: eventDescription,
-      category,
-      priority,
-    };
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("You must be logged in.");
+    return;
+  }
 
-    setEvents([...events, newEvent]);
+  const payload = {
+    user_id: 17, // later you can decode from token
+    title: eventTitle,
+    description: eventDescription,
+    date: eventDate,
+    start_time: startTime + ":00",
+    end_time: endTime + ":00",
+    category: category.toLowerCase(),   // "Personal" → "personal"
+    priority: priority
+  };
 
+  try {
+    const res = await fetch("http://localhost:5000/api/events", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("Failed to create event");
+      console.error(data);
+      return;
+    }
+
+    // Add returned event to UI
+    setEvents([...events, data]);
+
+    // Reset form
     setEventTitle("");
     setEventDate("");
     setStartTime("");
@@ -46,7 +72,12 @@ export default function AddEventPage() {
     setEventDescription("");
     setCategory("Personal");
     setPriority("medium");
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Error creating event");
+  }
+};
 
   const deleteEvent = (id) => {
     setEvents(events.filter((e) => e.id !== id));
