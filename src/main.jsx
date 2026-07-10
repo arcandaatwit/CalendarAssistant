@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import './index.css';
 
@@ -17,23 +17,38 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-// sample events — replace with google calendar api data later
-const events = [
-  {
-    title: "Sample Event",
-    start: new Date(2026, 5, 10, 10, 0),
-    end: new Date(2026, 5, 10, 12, 0),
-  },
-];
-
 const VIEWS = ["month", "week", "work_week", "day"];
 const VIEW_LABELS = { month: "Month", week: "Week", work_week: "3 Day", day: "Day" };
 
 export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
+  const [events, setEvents] = useState([]);
   const location = useLocation();
 
   const currentView = VIEWS[viewIndex];
+
+  // ⭐ Fetch events from backend
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("http://localhost:5000/api/events", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        // Convert DB events → react-big-calendar format
+        const formatted = data.map(ev => ({
+          title: ev.title,
+          start: new Date(ev.date + "T" + ev.start_time),
+          end: new Date(ev.date + "T" + ev.end_time)
+        }));
+
+        setEvents(formatted);
+      })
+      .catch(err => console.error("Error loading events:", err));
+  }, []);
 
   const cycleView = () => {
     setViewIndex((prev) => (prev + 1) % VIEWS.length);
