@@ -187,6 +187,7 @@ function LoginPage() {
         <button className="secondary-btn" onClick={() => setView("register")}>
           Create an Account
         </button>
+    
       </div>
     </div>
   );

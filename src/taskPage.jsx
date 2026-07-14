@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { usePersisted } from "./App";
 import "./index.css";
 
 const TYPE_LABELS = {
@@ -14,7 +15,7 @@ function TasksPage() {
   const [taskDate, setTaskDate]   = useState("");
   const [taskTime, setTaskTime]   = useState("");
 
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = usePersisted("tasks", []);
 
   const addTask = () => {
     if (!taskTitle.trim()) return;
@@ -171,7 +172,7 @@ function TasksPage() {
         <Link to="/main"     className="nav-btn">Calendar</Link>
         <Link to="/addEvent" className="nav-btn">Event</Link>
         <Link to="/taskPage" className="nav-btn active">Tasks</Link>
-        <button className="nav-btn">Profile</button>
+        <Link to="/profile" className="nav-btn">Profile</Link>
       </div>
 
     </div>
