@@ -1,12 +1,10 @@
-// routes/tasksRoutes.js
-
 import express from "express";
 import {
-  createTask,
-  getTasks,
-  getTaskById,
-  updateTask,
-  deleteTask
+    createTask,
+    getTasks,
+    getTask,
+    updateTask,
+    deleteTask
 } from "../controllers/tasksController.js";
 
 import { authenticateUser } from "../middleware/authMiddleware.js";
@@ -16,19 +14,19 @@ const router = express.Router();
 // All task routes require authentication
 router.use(authenticateUser);
 
-// GET all tasks (local + optional Google)
+// GET all tasks for the authenticated user
 router.get("/", getTasks);
 
-// GET single task
-router.get("/:id", getTaskById);
+// GET a single task by ID
+router.get("/:id", getTask);
 
-// CREATE task
+// CREATE a new task
 router.post("/", createTask);
 
-// UPDATE task
+// UPDATE a task
 router.put("/:id", updateTask);
 
-// DELETE task
+// DELETE a task
 router.delete("/:id", deleteTask);
 
 export default router;
