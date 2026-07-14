@@ -23,9 +23,8 @@ const VIEW_LABELS = { month: "Month", week: "Week", work_week: "3 Day", day: "Da
 
 export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
-  const [events, setEvents] = useState([]);
   const location = useLocation();
-  const { events } = useSettings();
+  const { events, setEvents } = useSettings();
 
   const calendarEvents = events
     .filter((e) => e.date)
