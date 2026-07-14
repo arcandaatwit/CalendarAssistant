@@ -27,10 +27,14 @@ import db from "./src/config/db.js";
 // IMPORT AUTH ROUTES 
 import authRoutes from "./src/routes/authRoutes.js";
 import taskRoutes from "./src/routes/tasksRoutes.js";
+import eventRoutes from "./src/routes/eventsRoutes.js";
+
+
 
 // authentication routes
 app.use("/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/events", eventRoutes);
 
 app.get("/ping", (req, res) => {
     res.json({ message: "backend is running" });
