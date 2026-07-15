@@ -40,7 +40,7 @@ export default function MainPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:5000/api/events", {
+    fetch("/api/events", {
       headers: {
         Authorization: `Bearer ${token}`
       }

@@ -40,6 +40,13 @@ app.get("/ping", (req, res) => {
     res.json({ message: "backend is running" });
 });
 
+// Serve the built frontend (run `npm run build` in the repo root first)
+const distPath = path.join(__dirname, "..", "dist");
+app.use(express.static(distPath));
+app.get(/^(?!\/(api|auth|ping)).*/, (req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+});
+
 // FIXED PORT BINDING
 const PORT = process.env.PORT || 5000;
 
