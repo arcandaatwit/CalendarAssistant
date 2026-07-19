@@ -1,0 +1,16 @@
+{
+  "ignore": [
+    "token.json",
+    "credentials.json",
+    "google.json",
+    "google/",
+    "*.log",
+    "config/db.js"
+  ],
+  "watch": [
+    "server.js",
+    "routes/",
+    "middleware/"
+  ],
+  "verbose": true
+}
