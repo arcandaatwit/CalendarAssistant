@@ -1,55 +1,55 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-console.log("Current working directory:", process.cwd());
-
-// Fix __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env
-dotenv.config();
 
-// Debug: confirm env loaded
-console.log("Loaded DB_PASSWORD:", process.env.DB_PASSWORD);
+dotenv.config();
+console.log("Loaded ENV:");
+console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
+console.log("GOOGLE_CALLBACK_URL:", process.env.GOOGLE_CALLBACK_URL);
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
+import passport from "./src/middleware/googleAuth.js";
 
 const app = express();
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Import database 
-import db from "./src/config/db.js";
+// ⭐ Passport ONLY — no sessions
+app.use(passport.initialize());
 
-// IMPORT AUTH ROUTES 
+// ROUTES
 import authRoutes from "./src/routes/authRoutes.js";
+import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";   // ⭐ ADD THIS
 import taskRoutes from "./src/routes/tasksRoutes.js";
 import eventRoutes from "./src/routes/eventsRoutes.js";
 
-
-
-// authentication routes
+// ⭐ Mount BOTH auth systems
 app.use("/auth", authRoutes);
+app.use("/auth", googleAuthRoutes);   // ⭐ ADD THIS
+
 app.use("/api/tasks", taskRoutes);
 app.use("/api/events", eventRoutes);
 
 app.get("/ping", (req, res) => {
-    res.json({ message: "backend is running" });
+  res.json({ message: "backend is running" });
 });
 
-// Serve the built frontend (run `npm run build` in the repo root first)
-const distPath = path.join(__dirname, "..", "dist");
-app.use(express.static(distPath));
-app.get(/^(?!\/(api|auth|ping)).*/, (req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
-});
-
-// FIXED PORT BINDING
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

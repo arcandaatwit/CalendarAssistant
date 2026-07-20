@@ -1,27 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGoogleLogin } from "@react-oauth/google";
-import './index.css';
+import "./index.css";
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [view, setView] = useState("main"); // "main" | "login" | "register"
+  const [view, setView] = useState("main");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const googleLogin = useGoogleLogin({
-    scope: "https://www.googleapis.com/auth/calendar.readonly", //read only access??
-    onSuccess: (tokenResponse) => {
-      localStorage.setItem("access_token", tokenResponse.access_token);
-      navigate("/main");
-    },
-    onError: () => {
-      alert("Google login failed, please try again");
-    },
-  });
+  // ⭐ NEW — backend Google OAuth redirect
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:5000/auth/google";
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -29,16 +22,20 @@ function LoginPage() {
       return;
     }
     try {
-      const res = await fetch("/auth/login", {
+
+      const res = await fetch("http://localhost:5000/auth/login", {
+
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
       if (!res.ok) {
         alert(data.error || "Login failed");
         return;
       }
+
       localStorage.setItem("token", data.token);
       navigate("/main");
     } catch (err) {
@@ -56,16 +53,20 @@ function LoginPage() {
       return;
     }
     try {
-      const res = await fetch("/auth/register", {
+
+      const res = await fetch("http://localhost:5000/auth/register", {
+
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
+
       const data = await res.json();
       if (!res.ok) {
         alert(data.error || "Registration failed");
         return;
       }
+
       alert("Account created! Please sign in.");
       setView("login");
     } catch (err) {
@@ -73,6 +74,7 @@ function LoginPage() {
     }
   };
 
+  // ⭐ LOGIN VIEW
   if (view === "login") {
     return (
       <div className="login-container">
@@ -89,6 +91,7 @@ function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div className="input-row">
             <input
               className="input-field"
@@ -98,6 +101,7 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
           <button className="primary-btn" onClick={handleLogin}>
             Sign In
           </button>
@@ -110,6 +114,7 @@ function LoginPage() {
     );
   }
 
+  // ⭐ REGISTER VIEW
   if (view === "register") {
     return (
       <div className="login-container">
@@ -126,6 +131,7 @@ function LoginPage() {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
+
           <div className="input-row">
             <input
               className="input-field"
@@ -135,6 +141,7 @@ function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div className="input-row">
             <input
               className="input-field"
@@ -144,6 +151,7 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
           <div className="input-row">
             <input
               className="input-field"
@@ -153,6 +161,7 @@ function LoginPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
+
           <button className="primary-btn" onClick={handleRegister}>
             Create Account
           </button>
@@ -165,14 +174,24 @@ function LoginPage() {
     );
   }
 
-  // main view 
+  // ⭐ MAIN VIEW
   return (
     <div className="login-container">
       <h2>Calendar Assistant</h2>
       <p>How would you like to sign in?</p>
 
-      <div className="card-box" style={{ width: "100%", maxWidth: "360px", display: "flex", flexDirection: "column", gap: "10px" }}>
-        <button className="primary-btn" onClick={() => googleLogin()}>
+      <div
+        className="card-box"
+        style={{
+          width: "100%",
+          maxWidth: "360px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+        }}
+      >
+        {/* ⭐ NEW — backend Google OAuth */}
+        <button className="primary-btn" onClick={handleGoogleLogin}>
           Sign in with Google
         </button>
 
@@ -187,7 +206,6 @@ function LoginPage() {
         <button className="secondary-btn" onClick={() => setView("register")}>
           Create an Account
         </button>
-    
       </div>
     </div>
   );
