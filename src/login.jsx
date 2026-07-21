@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./index.css";
 
+
 function LoginPage() {
   const navigate = useNavigate();
+
   const [view, setView] = useState("main");
 
   const [email, setEmail] = useState("");

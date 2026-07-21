@@ -33,16 +33,23 @@ app.use(passport.initialize());
 
 // ROUTES
 import authRoutes from "./src/routes/authRoutes.js";
-import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";   // ⭐ ADD THIS
+import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";   
 import taskRoutes from "./src/routes/tasksRoutes.js";
 import eventRoutes from "./src/routes/eventsRoutes.js";
+import googleSyncRoutes from "./src/routes/googleSyncRoutes.js"; 
 
-// ⭐ Mount BOTH auth systems
+
+
+// ⭐ auth routes
 app.use("/auth", authRoutes);
-app.use("/auth", googleAuthRoutes);   // ⭐ ADD THIS
+app.use("/auth", googleAuthRoutes);  
 
+// task and event routes 
 app.use("/api/tasks", taskRoutes);
 app.use("/api/events", eventRoutes);
+
+//google sync routes
+app.use("/api/google-sync", googleSyncRoutes);   
 
 app.get("/ping", (req, res) => {
   res.json({ message: "backend is running" });

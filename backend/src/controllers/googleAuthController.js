@@ -20,9 +20,9 @@ export const googleAuthCallback = (req, res) => {
     );
 
     // Redirect to frontend with token
-    return res.redirect(
-      `http://localhost:5173/login-success?token=${token}`
-    );
+   return res.redirect(`http://localhost:5173/main?token=${token}`
+);
+
 
   } catch (err) {
     console.error("Google Auth Error:", err);
