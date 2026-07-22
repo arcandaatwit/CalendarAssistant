@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const { priorityColors, setPriorityColors, categories, setCategories } = useSettings();
   const [newTag, setNewTag] = useState("");
 
+  const userEmail = localStorage.getItem("userEmail");
   const token = localStorage.getItem("token");
   const googleToken = localStorage.getItem("access_token");
 
@@ -32,25 +33,65 @@ export default function ProfilePage() {
         {/* Account */}
         <div className="card-box" style={{ marginBottom: "16px" }}>
           <h3 style={{ marginBottom: "8px" }}>Account</h3>
+
           <p style={{ fontSize: "14px", color: "var(--text-secondary, #888)" }}>
-            {googleToken ? "Signed in with Google" : token ? "Signed in with email" : "Not signed in"}
+            {userEmail
+              ? `Signed in as: ${userEmail}`
+              : "Not signed in"}
           </p>
-          <button className="secondary-btn" style={{ marginTop: "12px" }} onClick={() => {
-            localStorage.removeItem("token"); localStorage.removeItem("access_token"); navigate("/");
-          }}>Sign Out</button>
+
+          <button
+            className="secondary-btn"
+            style={{ marginTop: "12px" }}
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("access_token");
+              localStorage.removeItem("userEmail");
+              navigate("/");
+            }}
+          >
+            Sign Out
+          </button>
         </div>
 
         {/* Priority Colors */}
         <div className="card-box" style={{ marginBottom: "16px" }}>
           <h3 style={{ marginBottom: "12px" }}>Priority Colors</h3>
           {["high", "medium", "low"].map((level) => (
-            <div key={level} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-              <span style={{ fontSize: "14px", textTransform: "capitalize", color: priorityColors[level], fontWeight: "600" }}>{level}</span>
+            <div
+              key={level}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "10px"
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "14px",
+                  textTransform: "capitalize",
+                  color: priorityColors[level],
+                  fontWeight: "600"
+                }}
+              >
+                {level}
+              </span>
+
               <input
                 type="color"
                 value={priorityColors[level]}
-                onChange={(e) => setPriorityColors({ ...priorityColors, [level]: e.target.value })}
-                style={{ width: "40px", height: "32px", border: "none", borderRadius: "6px", cursor: "pointer", background: "none" }}
+                onChange={(e) =>
+                  setPriorityColors({ ...priorityColors, [level]: e.target.value })
+                }
+                style={{
+                  width: "40px",
+                  height: "32px",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  background: "none"
+                }}
               />
             </div>
           ))}
@@ -60,17 +101,40 @@ export default function ProfilePage() {
         <div className="card-box" style={{ marginBottom: "16px" }}>
           <h3 style={{ marginBottom: "12px" }}>Event Categories</h3>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              marginBottom: "12px"
+            }}
+          >
             {categories.map((tag) => (
               <span
                 key={tag}
                 className="task-tag"
-                style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  padding: "4px 10px"
+                }}
               >
                 {tag}
                 <button
-                  onClick={() => setCategories(categories.filter((c) => c !== tag))}
-                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", padding: "0", lineHeight: 1, color: "inherit", opacity: 0.6 }}
+                  onClick={() =>
+                    setCategories(categories.filter((c) => c !== tag))
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    padding: "0",
+                    lineHeight: 1,
+                    color: "inherit",
+                    opacity: 0.6
+                  }}
                 >
                   ✕
                 </button>
@@ -96,15 +160,37 @@ export default function ProfilePage() {
         {/* About */}
         <div className="card-box">
           <h3 style={{ marginBottom: "8px" }}>About</h3>
-          <p style={{ fontSize: "14px", color: "var(--text-secondary, #888)" }}>Calendar Assistant v1.0</p>
+          <p style={{ fontSize: "14px", color: "var(--text-secondary, #888)" }}>
+            Calendar Assistant v1.0
+          </p>
         </div>
       </div>
 
       <div className="bottom-nav">
-        <Link to="/main"     className={`nav-btn ${location.pathname === "/main"     ? "active" : ""}`}>Home</Link>
-        <Link to="/addEvent" className={`nav-btn ${location.pathname === "/addEvent" ? "active" : ""}`}>Event</Link>
-        <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Tasks</Link>
-        <Link to="/profile"  className={`nav-btn ${location.pathname === "/profile"  ? "active" : ""}`}>Profile</Link>
+        <Link
+          to="/main"
+          className={`nav-btn ${location.pathname === "/main" ? "active" : ""}`}
+        >
+          Home
+        </Link>
+        <Link
+          to="/addEvent"
+          className={`nav-btn ${location.pathname === "/addEvent" ? "active" : ""}`}
+        >
+          Event
+        </Link>
+        <Link
+          to="/taskPage"
+          className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}
+        >
+          Tasks
+        </Link>
+        <Link
+          to="/profile"
+          className={`nav-btn ${location.pathname === "/profile" ? "active" : ""}`}
+        >
+          Profile
+        </Link>
       </div>
 
     </div>

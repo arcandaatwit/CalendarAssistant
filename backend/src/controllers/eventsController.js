@@ -18,8 +18,10 @@ function mapEvent(row) {
 
 // CREATE EVENT
 export const createEvent = async (req, res) => {
+  // ⭐ Always use authenticated user ID
+  const user_id = req.user.id;
+
   const {
-    user_id,
     title,
     description,
     date,
@@ -29,7 +31,8 @@ export const createEvent = async (req, res) => {
     priority
   } = req.body;
 
-  if (!user_id || !title || !date || !start_time || !end_time || !category) {
+  // ⭐ Remove user_id from required fields
+  if (!title || !date || !start_time || !end_time || !category) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 

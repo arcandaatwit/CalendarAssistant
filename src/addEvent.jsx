@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSettings, usePersisted } from "./App";
 import { findOpenSlots } from "./scheduler/probability";
-import './index.css';
+import "./index.css";
 
 function pad(n) { return String(n).padStart(2, "0"); }
 function toDateInput(date) { return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`; }
@@ -11,28 +11,35 @@ function toTimeInput(date) { return `${pad(date.getHours())}:${pad(date.getMinut
 export default function AddEventPage() {
   const location = useLocation();
   const { priorityColors, categories, events, setEvents } = useSettings();
+  const safeEvents = Array.isArray(events) ? events : [];
+
   const [tasks] = usePersisted("tasks", []);
 
-  const [eventTitle, setEventTitle]         = useState("");
-  const [eventDate, setEventDate]           = useState("");
-  const [startTime, setStartTime]           = useState("");
-  const [endTime, setEndTime]               = useState("");
+  const [eventTitle, setEventTitle] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [eventDescription, setEventDescription] = useState("");
-  const [category, setCategory]             = useState("Personal");
-  const [priority, setPriority]             = useState("medium");
+  const [category, setCategory] = useState("Personal");
+  const [priority, setPriority] = useState("medium");
 
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionsRan, setSuggestionsRan] = useState(false);
 
+  // -----------------------------
+  // SCHEDULER
+  // -----------------------------
   const scheduleForMe = () => {
     let durationMinutes = 60;
+
     if (startTime && endTime) {
       const [sh, sm] = startTime.split(":").map(Number);
       const [eh, em] = endTime.split(":").map(Number);
       const diff = (eh * 60 + em) - (sh * 60 + sm);
       if (diff > 0) durationMinutes = diff;
     }
-    setSuggestions(findOpenSlots({ events, tasks, durationMinutes }));
+
+    setSuggestions(findOpenSlots({ events: safeEvents, tasks, durationMinutes }));
     setSuggestionsRan(true);
   };
 
@@ -44,72 +51,102 @@ export default function AddEventPage() {
     setSuggestionsRan(false);
   };
 
- const addEvent = async () => {
-  if (!eventTitle.trim()) return;
+  // -----------------------------
+  // ADD EVENT
+  // -----------------------------
+  const addEvent = async () => {
+    if (!eventTitle.trim()) return;
+    if (!eventDate) return alert("Please select a date.");
+    if (!startTime || !endTime) return alert("Please select start and end time.");
 
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("You must be logged in.");
-    return;
-  }
+    const token = localStorage.getItem("token");
+    if (!token) return alert("You must be logged in.");
 
-  const payload = {
-    user_id: 17, // later you can decode from token
-    title: eventTitle,
-    description: eventDescription,
-    date: eventDate,
-    start_time: startTime + ":00",
-    end_time: endTime + ":00",
-    category: category.toLowerCase(),   // "Personal" → "personal"
-    priority: priority
-  };
+    const normalizedStart = startTime.length === 5 ? startTime + ":00" : startTime;
+    const normalizedEnd = endTime.length === 5 ? endTime + ":00" : endTime;
 
-  try {
-    const res = await fetch("/api/events", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
+    const payload = {
+      title: eventTitle,
+      description: eventDescription,
+      date: eventDate,
+      start_time: normalizedStart,
+      end_time: normalizedEnd,
+      category: category.toLowerCase(),
+      priority
+    };
 
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
 
-    if (!res.ok) {
-      alert("Failed to create event");
-      console.error(data);
-      return;
+      const data = await res.json();
+      if (!res.ok) {
+        console.error(data);
+        return alert("Failed to create event");
+      }
+
+      setEvents([...safeEvents, data]);
+
+      setEventTitle("");
+      setEventDate("");
+      setStartTime("");
+      setEndTime("");
+      setEventDescription("");
+      setCategory("Personal");
+      setPriority("medium");
+
+    } catch (err) {
+      console.error(err);
+      alert("Error creating event");
     }
-
-    // Add returned event to UI
-    setEvents([...events, data]);
-
-    // Reset form
-    setEventTitle("");
-    setEventDate("");
-    setStartTime("");
-    setEndTime("");
-    setEventDescription("");
-    setCategory("Personal");
-    setPriority("medium");
-
-  } catch (err) {
-    console.error(err);
-    alert("Error creating event");
-  }
-};
-
-  const deleteEvent = (id) => {
-    setEvents(events.filter((e) => e.id !== id));
   };
 
-  // sort by priority: high first
+  // -----------------------------
+  // DELETE EVENT
+  // -----------------------------
+  const deleteEvent = async (id) => {
+    const token = localStorage.getItem("token");
+    if (!token) return alert("You must be logged in.");
+
+    try {
+      const res = await fetch(`/api/events/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error(data);
+        return alert("Failed to delete event");
+      }
+
+      setEvents(safeEvents.filter(e => e.id !== id));
+
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting event");
+    }
+  };
+
+  // -----------------------------
+  // SORT EVENTS BY PRIORITY
+  // -----------------------------
   const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
-  const sortedEvents = [...events].sort(
+  const sortedEvents = [...safeEvents].sort(
     (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
   );
 
+  // -----------------------------
+  // RENDER
+  // -----------------------------
   return (
     <div className="app-container">
 
@@ -181,7 +218,6 @@ export default function AddEventPage() {
             <p className="empty-text">No open slots found in the next 14 days.</p>
           )}
 
-          {/* category */}
           <div className="input-row">
             <select
               className="input-field"
@@ -194,7 +230,6 @@ export default function AddEventPage() {
             </select>
           </div>
 
-          {/* priority */}
           <div className="input-row" style={{ gap: "8px" }}>
             {["high", "medium", "low"].map((p) => (
               <button
@@ -265,7 +300,14 @@ export default function AddEventPage() {
                         {e.priority}
                       </span>
                     </div>
-                    {e.date && <p>{e.date}{(e.startTime || e.endTime) ? ` · ${e.startTime} — ${e.endTime}` : ""}</p>}
+
+                    {e.date && (
+                      <p>
+                        {e.date}
+                        {(e.start_time || e.end_time) ? ` · ${e.start_time} — ${e.end_time}` : ""}
+                      </p>
+                    )}
+
                     {e.description && <p>{e.description}</p>}
                   </div>
                 </div>
@@ -274,7 +316,7 @@ export default function AddEventPage() {
           </>
         )}
 
-        {events.length === 0 && (
+        {safeEvents.length === 0 && (
           <div className="card-box">
             <p className="empty-text">No events yet — add one above.</p>
           </div>
@@ -282,11 +324,10 @@ export default function AddEventPage() {
       </div>
 
       <div className="bottom-nav">
-        <Link to="/main"     className="nav-btn">Calendar</Link>
+        <Link to="/main" className="nav-btn">Calendar</Link>
         <Link to="/addEvent" className="nav-btn active">Event</Link>
         <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Task</Link>
         <Link to="/profile" className={`nav-btn ${location.pathname === "/profile" ? "active" : ""}`}>Profile</Link>
-        <Link to="/app" className={`nav-btn ${location.pathname ==="/app.jsx" ? "active" : ""} `}>App</Link>
       </div>
 
     </div>
