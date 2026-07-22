@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { usePersisted } from "./App";
+import { useSettings } from "./App";
+import { apiFetch, taskToApiPayload } from "./api";
 import "./index.css";
 
 const TYPE_LABELS = {
@@ -10,39 +11,66 @@ const TYPE_LABELS = {
 };
 
 function TasksPage() {
+  const { tasks, setTasks, refreshTasks, priorityColors } = useSettings();
+
   const [taskTitle, setTaskTitle] = useState("");
   const [taskType, setTaskType]   = useState("todo");
   const [taskDate, setTaskDate]   = useState("");
   const [taskTime, setTaskTime]   = useState("");
+  const [priority, setPriority]   = useState("medium");
 
-  const [tasks, setTasks] = usePersisted("tasks", []);
-
-  const addTask = () => {
+  const addTask = async () => {
     if (!taskTitle.trim()) return;
 
-    const newTask = {
-      id: Date.now(),
+    if (!localStorage.getItem("token")) {
+      alert("You must be logged in.");
+      return;
+    }
+
+    const payload = taskToApiPayload({
       title: taskTitle,
       type: taskType,
-      date: taskDate,
-      time: taskTime,
+      date: taskType === "todo" ? null : taskDate,
+      time: taskType === "todo" ? null : taskTime,
+      priority,
       completed: false,
-    };
+    });
 
-    setTasks([...tasks, newTask]);
+    try {
+      await apiFetch("/api/tasks", { method: "POST", body: payload });
+      // createTask only returns a status message, not the created row — refetch.
+      await refreshTasks();
 
-    setTaskTitle("");
-    setTaskType("todo");
-    setTaskDate("");
-    setTaskTime("");
+      setTaskTitle("");
+      setTaskType("todo");
+      setTaskDate("");
+      setTaskTime("");
+      setPriority("medium");
+    } catch (err) {
+      console.error(err);
+      alert("Error creating task");
+    }
   };
 
-  const toggleComplete = (id) => {
-    setTasks(tasks.map((t) => t.id === id ? { ...t, completed: !t.completed } : t));
+  const toggleComplete = async (task) => {
+    const payload = taskToApiPayload({ ...task, completed: !task.completed });
+    try {
+      await apiFetch(`/api/tasks/${task.id}`, { method: "PUT", body: payload });
+      setTasks(tasks.map((t) => t.id === task.id ? { ...t, completed: !t.completed } : t));
+    } catch (err) {
+      console.error(err);
+      alert("Error updating task");
+    }
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((t) => t.id !== id));
+  const deleteTask = async (id) => {
+    try {
+      await apiFetch(`/api/tasks/${id}`, { method: "DELETE" });
+      setTasks(tasks.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting task");
+    }
   };
 
   const pending   = tasks.filter((t) => !t.completed);
@@ -100,6 +128,31 @@ function TasksPage() {
             </div>
           )}
 
+          {/* priority */}
+          <div className="input-row" style={{ gap: "8px" }}>
+            {["high", "medium", "low"].map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPriority(p)}
+                style={{
+                  flex: 1,
+                  padding: "8px",
+                  borderRadius: "10px",
+                  border: `2px solid ${priorityColors[p]}`,
+                  background: priority === p ? priorityColors[p] : "transparent",
+                  color: priority === p ? "white" : priorityColors[p],
+                  fontFamily: "inherit",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  fontWeight: priority === p ? "600" : "400",
+                }}
+              >
+                {p.charAt(0).toUpperCase() + p.slice(1)}
+              </button>
+            ))}
+          </div>
+
           <button className="primary-btn" onClick={addTask}>
             Add
           </button>
@@ -116,12 +169,18 @@ function TasksPage() {
                     <input
                       type="checkbox"
                       checked={t.completed}
-                      onChange={() => toggleComplete(t.id)}
+                      onChange={() => toggleComplete(t)}
                     />
                     <span>{t.title}</span>
                   </label>
                   <div className="task-meta">
                     <span className="task-tag">{TYPE_LABELS[t.type]}</span>
+                    <span
+                      className="task-tag"
+                      style={{ background: priorityColors[t.priority] + "22", color: priorityColors[t.priority] }}
+                    >
+                      {t.priority}
+                    </span>
                     {t.date && <span> · {t.date}{t.time ? ` at ${t.time}` : ""}</span>}
                   </div>
                 </div>
@@ -141,7 +200,7 @@ function TasksPage() {
                     <input
                       type="checkbox"
                       checked={t.completed}
-                      onChange={() => toggleComplete(t.id)}
+                      onChange={() => toggleComplete(t)}
                     />
                     <span className="task-done">{t.title}</span>
                   </label>

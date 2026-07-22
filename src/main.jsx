@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSettings } from "./App";
 import './index.css';
@@ -24,7 +24,7 @@ const VIEW_LABELS = { month: "Month", week: "Week", work_week: "3 Day", day: "Da
 export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
   const location = useLocation();
-  const { events, setEvents } = useSettings();
+  const { events } = useSettings();
 
   const calendarEvents = events
     .filter((e) => e.date)
@@ -35,29 +35,6 @@ export default function MainPage() {
     });
 
   const currentView = VIEWS[viewIndex];
-
-  // ⭐ Fetch events from backend
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    fetch("/api/events", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        // Convert DB events → react-big-calendar format
-        const formatted = data.map(ev => ({
-          title: ev.title,
-          start: new Date(ev.date + "T" + ev.start_time),
-          end: new Date(ev.date + "T" + ev.end_time)
-        }));
-
-        setEvents(formatted);
-      })
-      .catch(err => console.error("Error loading events:", err));
-  }, []);
 
   const cycleView = () => {
     setViewIndex((prev) => (prev + 1) % VIEWS.length);

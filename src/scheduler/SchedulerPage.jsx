@@ -1,22 +1,26 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useSettings } from "../App";
 import { generateSuggestions } from "./probability";
 import "../index.css";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// TODO: replace with real events fetched from the database / Google Calendar API
-const MOCK_HISTORY = [];
-
 export default function SchedulerPage() {
   const location = useLocation();
+  const { events } = useSettings();
   const [lookahead, setLookahead] = useState(14); // 7 or 14 days
   const [suggestions, setSuggestions] = useState([]);
   const [ran, setRan] = useState(false);
 
   const runScheduler = () => {
-    // TODO: swap MOCK_HISTORY for real fetched events
-    const results = generateSuggestions(MOCK_HISTORY, lookahead);
+    const history = events
+      .filter((e) => e.date)
+      .map((e) => ({
+        title: e.title,
+        start: new Date(`${e.date}T${e.startTime || "00:00"}`),
+      }));
+    const results = generateSuggestions(history, lookahead);
     setSuggestions(results);
     setRan(true);
   };

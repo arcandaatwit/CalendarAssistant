@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useSettings, usePersisted } from "./App";
+import { useSettings } from "./App";
 import { findOpenSlots } from "./scheduler/probability";
+import { apiFetch, eventToApiPayload, mapEventFromApi } from "./api";
 import './index.css';
 
 function pad(n) { return String(n).padStart(2, "0"); }
@@ -10,8 +11,7 @@ function toTimeInput(date) { return `${pad(date.getHours())}:${pad(date.getMinut
 
 export default function AddEventPage() {
   const location = useLocation();
-  const { priorityColors, categories, events, setEvents } = useSettings();
-  const [tasks] = usePersisted("tasks", []);
+  const { priorityColors, categories, events, setEvents, tasks } = useSettings();
 
   const [eventTitle, setEventTitle]         = useState("");
   const [eventDate, setEventDate]           = useState("");
@@ -47,43 +47,26 @@ export default function AddEventPage() {
  const addEvent = async () => {
   if (!eventTitle.trim()) return;
 
-  const token = localStorage.getItem("token");
-  if (!token) {
+  if (!localStorage.getItem("token")) {
     alert("You must be logged in.");
     return;
   }
 
-  const payload = {
-    user_id: 17, // later you can decode from token
+  const payload = eventToApiPayload({
     title: eventTitle,
     description: eventDescription,
     date: eventDate,
-    start_time: startTime + ":00",
-    end_time: endTime + ":00",
+    startTime,
+    endTime,
     category: category.toLowerCase(),   // "Personal" → "personal"
-    priority: priority
-  };
+    priority,
+  });
 
   try {
-    const res = await fetch("/api/events", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert("Failed to create event");
-      console.error(data);
-      return;
-    }
+    const data = await apiFetch("/api/events", { method: "POST", body: payload });
 
     // Add returned event to UI
-    setEvents([...events, data]);
+    setEvents([...events, mapEventFromApi(data)]);
 
     // Reset form
     setEventTitle("");
@@ -100,8 +83,14 @@ export default function AddEventPage() {
   }
 };
 
-  const deleteEvent = (id) => {
-    setEvents(events.filter((e) => e.id !== id));
+  const deleteEvent = async (id) => {
+    try {
+      await apiFetch(`/api/events/${id}`, { method: "DELETE" });
+      setEvents(events.filter((e) => e.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting event");
+    }
   };
 
   // sort by priority: high first

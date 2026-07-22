@@ -1,10 +1,11 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Routes, Route } from "react-router-dom";
 import LoginPage from "./login";
 import MainPage from "./main";
 import AddEventPage from "./addEvent";
 import Tasks from "./taskPage";
 import ProfilePage from "./profile";
+import { apiFetch, mapEventFromApi, mapTaskFromApi } from "./api";
 import './index.css';
 
 const DEFAULT_PRIORITY_COLORS = { high: "#d33636", medium: "#f7b731", low: "#688bf2" };
@@ -28,9 +29,42 @@ function App() {
   const [priorityColors, setPriorityColors] = usePersisted("priorityColors", DEFAULT_PRIORITY_COLORS);
   const [categories, setCategories]         = usePersisted("categories", DEFAULT_CATEGORIES);
   const [events, setEvents]                 = useState([]);
+  const [tasks, setTasks]                   = useState([]);
+
+  const refreshEvents = useCallback(async () => {
+    if (!localStorage.getItem("token")) return;
+    try {
+      const rows = await apiFetch("/api/events");
+      setEvents(rows.map(mapEventFromApi));
+    } catch (err) {
+      console.error("Error loading events:", err);
+    }
+  }, []);
+
+  const refreshTasks = useCallback(async () => {
+    if (!localStorage.getItem("token")) return;
+    try {
+      const rows = await apiFetch("/api/tasks");
+      setTasks(rows.map(mapTaskFromApi));
+    } catch (err) {
+      console.error("Error loading tasks:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      await refreshEvents();
+      await refreshTasks();
+    })();
+  }, [refreshEvents, refreshTasks]);
 
   return (
-    <SettingsContext.Provider value={{ priorityColors, setPriorityColors, categories, setCategories, events, setEvents }}>
+    <SettingsContext.Provider value={{
+      priorityColors, setPriorityColors,
+      categories, setCategories,
+      events, setEvents, refreshEvents,
+      tasks, setTasks, refreshTasks,
+    }}>
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/main" element={<MainPage />} />
