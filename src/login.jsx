@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./index.css";
 
-
 function LoginPage() {
   const navigate = useNavigate();
 
@@ -13,20 +12,20 @@ function LoginPage() {
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // ⭐ NEW — backend Google OAuth redirect
+  // ⭐ Google OAuth redirect
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:5000/auth/google";
   };
 
+  // ⭐ EMAIL LOGIN
   const handleLogin = async () => {
     if (!email || !password) {
       alert("Please fill in all fields");
       return;
     }
+
     try {
-
       const res = await fetch("http://localhost:5000/auth/login", {
-
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -38,13 +37,19 @@ function LoginPage() {
         return;
       }
 
+      // ⭐ Save token
       localStorage.setItem("token", data.token);
+
+      // ⭐ Save email (correct location!)
+      localStorage.setItem("userEmail", data.user.email);
+
       navigate("/main");
     } catch (err) {
       alert("Could not reach the server");
     }
   };
 
+  // ⭐ REGISTER
   const handleRegister = async () => {
     if (!name || !email || !password || !confirmPassword) {
       alert("Please fill in all fields");
@@ -54,10 +59,9 @@ function LoginPage() {
       alert("Passwords do not match");
       return;
     }
+
     try {
-
       const res = await fetch("http://localhost:5000/auth/register", {
-
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -192,7 +196,6 @@ function LoginPage() {
           gap: "10px",
         }}
       >
-        {/* ⭐ NEW — backend Google OAuth */}
         <button className="primary-btn" onClick={handleGoogleLogin}>
           Sign in with Google
         </button>
