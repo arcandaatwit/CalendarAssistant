@@ -20,6 +20,7 @@ export default function AddEventPage() {
   const [eventDescription, setEventDescription] = useState("");
   const [category, setCategory]             = useState("Personal");
   const [priority, setPriority]             = useState("medium");
+  const [editingId, setEditingId]           = useState(null);
 
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionsRan, setSuggestionsRan] = useState(false);
@@ -44,7 +45,30 @@ export default function AddEventPage() {
     setSuggestionsRan(false);
   };
 
- const addEvent = async () => {
+ const resetForm = () => {
+  setEventTitle("");
+  setEventDate("");
+  setStartTime("");
+  setEndTime("");
+  setEventDescription("");
+  setCategory("Personal");
+  setPriority("medium");
+  setEditingId(null);
+};
+
+ const startEditEvent = (event) => {
+  setEditingId(event.id);
+  setEventTitle(event.title);
+  setEventDate(event.date);
+  setStartTime(event.startTime);
+  setEndTime(event.endTime);
+  setEventDescription(event.description || "");
+  // stored category is lowercase; match it back to the display-cased option
+  setCategory(categories.find((c) => c.toLowerCase() === event.category) || categories[0]);
+  setPriority(event.priority);
+};
+
+ const saveEvent = async () => {
   if (!eventTitle.trim()) return;
 
   const token = localStorage.getItem("token");
@@ -65,43 +89,78 @@ export default function AddEventPage() {
   };
 
   try {
-    const res = await fetch("http://localhost:5000/api/events", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
+    if (editingId) {
+      const res = await fetch(`/api/events/${editingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
 
-    const data = await res.json();
+      if (!res.ok) {
+        alert("Failed to update event");
+        return;
+      }
 
-    if (!res.ok) {
-      alert("Failed to create event");
-      console.error(data);
-      return;
+      setEvents(events.map((e) => e.id === editingId
+        ? { ...e, title: eventTitle, description: eventDescription, date: eventDate, startTime, endTime, category: category.toLowerCase(), priority }
+        : e
+      ));
+    } else {
+      const res = await fetch("http://localhost:5000/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("Failed to create event");
+        console.error(data);
+        return;
+      }
+
+      // Add returned event to UI
+      setEvents([...events, {
+        ...data,
+        startTime: data.start_time?.slice(0, 5),
+        endTime: data.end_time?.slice(0, 5),
+      }]);
     }
 
-    // Add returned event to UI
-    setEvents([...events, data]);
-
-    // Reset form
-    setEventTitle("");
-    setEventDate("");
-    setStartTime("");
-    setEndTime("");
-    setEventDescription("");
-    setCategory("Personal");
-    setPriority("medium");
+    resetForm();
 
   } catch (err) {
     console.error(err);
-    alert("Error creating event");
+    alert(editingId ? "Error updating event" : "Error creating event");
   }
 };
 
-  const deleteEvent = (id) => {
-    setEvents(events.filter((e) => e.id !== id));
+  const deleteEvent = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`/api/events/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        alert("Failed to delete event");
+        return;
+      }
+
+      setEvents(events.filter((e) => e.id !== id));
+      if (editingId === id) resetForm();
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting event");
+    }
   };
 
   // sort by priority: high first
@@ -229,9 +288,16 @@ export default function AddEventPage() {
             />
           </div>
 
-          <button className="primary-btn" onClick={addEvent}>
-            Add
-          </button>
+          <div className="input-row" style={{ gap: "8px" }}>
+            <button className="primary-btn" style={{ flex: 1 }} onClick={saveEvent}>
+              {editingId ? "Save Changes" : "Add"}
+            </button>
+            {editingId && (
+              <button type="button" className="secondary-btn" onClick={resetForm}>
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
 
         {sortedEvents.length > 0 && (
@@ -246,13 +312,24 @@ export default function AddEventPage() {
                 >
                   <div className="task-row" style={{ justifyContent: "space-between" }}>
                     <span style={{ fontWeight: "500", color: "var(--text-h)" }}>{e.title}</span>
-                    <button
-                      className="link-btn"
-                      style={{ fontSize: "12px", padding: "0" }}
-                      onClick={() => deleteEvent(e.id)}
-                    >
-                      Remove
-                    </button>
+                    {!String(e.id).startsWith("google-") && (
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <button
+                          className="link-btn"
+                          style={{ fontSize: "12px", padding: "0" }}
+                          onClick={() => startEditEvent(e)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="link-btn"
+                          style={{ fontSize: "12px", padding: "0" }}
+                          onClick={() => deleteEvent(e.id)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="task-meta">
@@ -264,6 +341,9 @@ export default function AddEventPage() {
                       >
                         {e.priority}
                       </span>
+                      {String(e.id).startsWith("google-") && (
+                        <span className="task-tag">From Google Calendar</span>
+                      )}
                     </div>
                     {e.date && <p>{e.date}{(e.startTime || e.endTime) ? ` · ${e.startTime} — ${e.endTime}` : ""}</p>}
                     {e.description && <p>{e.description}</p>}
@@ -286,7 +366,6 @@ export default function AddEventPage() {
         <Link to="/addEvent" className="nav-btn active">Event</Link>
         <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Task</Link>
         <Link to="/profile" className={`nav-btn ${location.pathname === "/profile" ? "active" : ""}`}>Profile</Link>
-        <Link to="/app" className={`nav-btn ${location.pathname ==="/app.jsx" ? "active" : ""} `}>App</Link>
       </div>
 
     </div>

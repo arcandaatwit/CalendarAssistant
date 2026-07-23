@@ -23,9 +23,8 @@ const VIEW_LABELS = { month: "Month", week: "Week", work_week: "3 Day", day: "Da
 
 export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
-  const [events, setEvents] = useState([]);
   const location = useLocation();
-  const { events } = useSettings();
+  const { events, setEvents } = useSettings();
 
   const calendarEvents = events
     .filter((e) => e.date)
@@ -40,22 +39,33 @@ export default function MainPage() {
   // ⭐ Fetch events from backend
   useEffect(() => {
     const token = localStorage.getItem("token");
+    if (!token) return;
 
-    fetch("http://localhost:5000/api/events", {
+    fetch("/api/events", {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
       .then(res => res.json())
       .then(data => {
-        // Convert DB events → react-big-calendar format
+        // Convert DB events → the shape addEvent.jsx/the calendar expect
         const formatted = data.map(ev => ({
+          id: ev.id,
           title: ev.title,
-          start: new Date(ev.date + "T" + ev.start_time),
-          end: new Date(ev.date + "T" + ev.end_time)
+          description: ev.description || "",
+          date: ev.date,
+          startTime: ev.start_time?.slice(0, 5),
+          endTime: ev.end_time?.slice(0, 5),
+          category: ev.category,
+          priority: ev.priority,
         }));
 
-        setEvents(formatted);
+        // Keep any Google-sourced events (loaded separately, tagged "google-")
+        // instead of clobbering them with this DB-only fetch.
+        setEvents((prev) => [
+          ...formatted,
+          ...prev.filter((e) => String(e.id).startsWith("google-")),
+        ]);
       })
       .catch(err => console.error("Error loading events:", err));
   }, []);

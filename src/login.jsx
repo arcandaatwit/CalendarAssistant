@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGoogleLogin } from "@react-oauth/google";
 import './index.css';
 
 function LoginPage() {
@@ -12,16 +11,11 @@ function LoginPage() {
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const googleLogin = useGoogleLogin({
-    scope: "https://www.googleapis.com/auth/calendar.readonly", //read only access??
-    onSuccess: (tokenResponse) => {
-      localStorage.setItem("access_token", tokenResponse.access_token);
-      navigate("/main");
-    },
-    onError: () => {
-      alert("Google login failed, please try again");
-    },
-  });
+  // Full-page redirect into the backend's OAuth flow — it issues our own
+  // JWT and sends the browser back to /main?token=... when done.
+  const handleGoogleLogin = () => {
+    window.location.href = "/auth/google";
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -172,7 +166,7 @@ function LoginPage() {
       <p>How would you like to sign in?</p>
 
       <div className="card-box" style={{ width: "100%", maxWidth: "360px", display: "flex", flexDirection: "column", gap: "10px" }}>
-        <button className="primary-btn" onClick={() => googleLogin()}>
+        <button className="primary-btn" onClick={handleGoogleLogin}>
           Sign in with Google
         </button>
 
