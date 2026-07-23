@@ -5,7 +5,7 @@ import './index.css';
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [view, setView] = useState("main"); // "main" | "login" | "register"
+  const [view, setView] = useState("main"); // "main" "login" "register"
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +29,7 @@ function LoginPage() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/auth/login", {//proper access point???
+      const res = await fetch("http://localhost:5000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -56,7 +56,7 @@ function LoginPage() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/auth/register", { //access point??
+      const res = await fetch("http://localhost:5000/auth/register", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
