@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import geminiRoutes from "./src/routes/geminiRoutes.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +52,9 @@ app.use("/api/events", eventRoutes);
 
 //google sync routes
 app.use("/api/google-sync", googleSyncRoutes);   
+
+// Gemini chat route
+app.use("/api/gemini", geminiRoutes);
 
 app.get("/ping", (req, res) => {
   res.json({ message: "backend is running" });
