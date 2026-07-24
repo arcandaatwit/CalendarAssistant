@@ -6,10 +6,15 @@ import "./index.css";
 export default function ProfilePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { priorityColors, setPriorityColors, categories, setCategories } = useSettings();
+  const { priorityColors, setPriorityColors, categories, setCategories, theme, setTheme } = useSettings();
   const [newTag, setNewTag] = useState("");
 
-  const userEmail = localStorage.getItem("userEmail");
+  const THEMES = [
+    { id: "spring", label: "Spring", colors: ["#faf9fc", "#b9a6ff", "#e8e4f0"] },
+    { id: "sunset", label: "Sunset", colors: ["#fdf6f1", "#e8875a", "#f5e2d3"] },
+    { id: "sea",    label: "Sea",    colors: ["#f3f8fa", "#4fa3b5", "#dcebf0"] },
+  ];
+
   const token = localStorage.getItem("token");
   const googleToken = localStorage.getItem("access_token");
 
@@ -52,6 +57,50 @@ export default function ProfilePage() {
           >
             Sign Out
           </button>
+        </div>
+
+        {/* Appearance */}
+        <div className="card-box" style={{ marginBottom: "16px" }}>
+          <h3 style={{ marginBottom: "12px" }}>Appearance</h3>
+          <div style={{ display: "flex", gap: "10px" }}>
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`theme-swatch ${theme === t.id ? "active" : ""}`}
+                onClick={() => setTheme(t.id)}
+              >
+                <span className="theme-swatch-preview">
+                  {t.colors.map((c, i) => (
+                    <span key={i} style={{ background: c }} />
+                  ))}
+                </span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Appearance */}
+        <div className="card-box" style={{ marginBottom: "16px" }}>
+          <h3 style={{ marginBottom: "12px" }}>Appearance</h3>
+          <div style={{ display: "flex", gap: "10px" }}>
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`theme-swatch ${theme === t.id ? "active" : ""}`}
+                onClick={() => setTheme(t.id)}
+              >
+                <span className="theme-swatch-preview">
+                  {t.colors.map((c, i) => (
+                    <span key={i} style={{ background: c }} />
+                  ))}
+                </span>
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Priority Colors */}

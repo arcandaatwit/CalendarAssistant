@@ -1,23 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./index.css";
+import './index.css';
 
 function LoginPage() {
   const navigate = useNavigate();
-
-  const [view, setView] = useState("main");
+  const [view, setView] = useState("main"); // "main" "login" "register"
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // ⭐ Google OAuth redirect
+  // Full-page redirect into the backend's OAuth flow — it issues our own
+  // JWT and sends the browser back to /main?token=... when done.
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:5000/auth/google";
+    window.location.href = "/auth/google";
   };
 
-  // ⭐ EMAIL LOGIN
   const handleLogin = async () => {
     if (!email || !password) {
       alert("Please fill in all fields");
@@ -61,7 +60,7 @@ function LoginPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/auth/register", {
+      const res = await fetch("http://localhost:5000/auth/register", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -186,16 +185,7 @@ function LoginPage() {
       <h2>Calendar Assistant</h2>
       <p>How would you like to sign in?</p>
 
-      <div
-        className="card-box"
-        style={{
-          width: "100%",
-          maxWidth: "360px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-        }}
-      >
+      <div className="card-box" style={{ width: "100%", maxWidth: "360px", display: "flex", flexDirection: "column", gap: "10px" }}>
         <button className="primary-btn" onClick={handleGoogleLogin}>
           Sign in with Google
         </button>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePersisted } from "./App";
+import ChatWidget from "./ChatWidget";
 import "./index.css";
 
 const TYPE_LABELS = {
@@ -174,6 +175,8 @@ function TasksPage() {
         <Link to="/taskPage" className="nav-btn active">Tasks</Link>
         <Link to="/profile" className="nav-btn">Profile</Link>
       </div>
+
+      <ChatWidget />
 
     </div>
   );

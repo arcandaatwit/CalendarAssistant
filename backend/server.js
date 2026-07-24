@@ -39,6 +39,7 @@ import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";
 import taskRoutes from "./src/routes/tasksRoutes.js";
 import eventRoutes from "./src/routes/eventsRoutes.js";
 import googleSyncRoutes from "./src/routes/googleSyncRoutes.js"; 
+import chatRoutes from "./src/routes/chatRoutes.js";
 
 
 
@@ -49,6 +50,7 @@ app.use("/auth", googleAuthRoutes);
 // task and event routes 
 app.use("/api/tasks", taskRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/chat", chatRoutes);
 
 //google sync routes
 app.use("/api/google-sync", googleSyncRoutes);   
