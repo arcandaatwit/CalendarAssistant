@@ -28,6 +28,7 @@ import db from "./src/config/db.js";
 import authRoutes from "./src/routes/authRoutes.js";
 import taskRoutes from "./src/routes/tasksRoutes.js";
 import eventRoutes from "./src/routes/eventsRoutes.js";
+import chatRoutes from "./src/routes/chatRoutes.js";
 
 
 
@@ -35,6 +36,7 @@ import eventRoutes from "./src/routes/eventsRoutes.js";
 app.use("/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.get("/ping", (req, res) => {
     res.json({ message: "backend is running" });

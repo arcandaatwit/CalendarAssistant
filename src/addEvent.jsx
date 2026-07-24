@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSettings, usePersisted } from "./App";
 import { findOpenSlots } from "./scheduler/probability";
+import ChatWidget from "./ChatWidget";
 import './index.css';
 
 function pad(n) { return String(n).padStart(2, "0"); }
@@ -367,6 +368,8 @@ export default function AddEventPage() {
         <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Task</Link>
         <Link to="/profile" className={`nav-btn ${location.pathname === "/profile" ? "active" : ""}`}>Profile</Link>
       </div>
+
+      <ChatWidget />
 
     </div>
   );
