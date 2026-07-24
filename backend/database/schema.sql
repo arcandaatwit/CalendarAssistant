@@ -9,39 +9,24 @@ CREATE TABLE users (
 
 );
 
+
 CREATE TABLE IF NOT EXISTS tasks (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id INT NOT NULL AUTO_INCREMENT,
   user_id INT NOT NULL,
   title VARCHAR(255) NOT NULL,
-  description TEXT,
-  location VARCHAR(255),
+  description TEXT NULL,
+  location VARCHAR(255) NULL,
   priority ENUM('low','medium','high') DEFAULT 'medium',
-  flag ENUM('none','family','kids','pets','work','school','health','personal','shopping','finance') DEFAULT 'none',
-  deadline DATETIME,
+  flag ENUM('none','family','kids','pets','work','school','health','finance') DEFAULT 'none',
+  deadline DATETIME NULL,
   status ENUM('pending','in_progress','completed') DEFAULT 'pending',
-  google_task_id VARCHAR(255),
+  google_task_id VARCHAR(255) NULL,
   google_status ENUM('needsAction','completed') DEFAULT 'needsAction',
-  google_due DATETIME,
-  google_updated_at DATETIME,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-CREATE TABLE EVENTS (
-    ind INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,   
-
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-
-    category ENUM('work', 'personal', 'kids', 'health', 'other') NOT NULL,
-    priority ENUM('low', 'medium', 'high') NOT NULL default 'medium',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-
+  google_due DATETIME NULL,
+  google_updated_at DATETIME NULL,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY user_id (user_id),
+  CONSTRAINT fk_tasks_user FOREIGN KEY (user_id) REFERENCES users(id)
 );

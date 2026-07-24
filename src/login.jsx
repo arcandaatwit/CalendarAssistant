@@ -22,24 +22,33 @@ function LoginPage() {
       alert("Please fill in all fields");
       return;
     }
+
     try {
       const res = await fetch("http://localhost:5000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
       if (!res.ok) {
         alert(data.error || "Login failed");
         return;
       }
+
+      // ⭐ Save token
       localStorage.setItem("token", data.token);
+
+      // ⭐ Save email (correct location!)
+      localStorage.setItem("userEmail", data.user.email);
+
       navigate("/main");
     } catch (err) {
       alert("Could not reach the server");
     }
   };
 
+  // ⭐ REGISTER
   const handleRegister = async () => {
     if (!name || !email || !password || !confirmPassword) {
       alert("Please fill in all fields");
@@ -49,17 +58,20 @@ function LoginPage() {
       alert("Passwords do not match");
       return;
     }
+
     try {
       const res = await fetch("http://localhost:5000/auth/register", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
+
       const data = await res.json();
       if (!res.ok) {
         alert(data.error || "Registration failed");
         return;
       }
+
       alert("Account created! Please sign in.");
       setView("login");
     } catch (err) {
@@ -67,6 +79,7 @@ function LoginPage() {
     }
   };
 
+  // ⭐ LOGIN VIEW
   if (view === "login") {
     return (
       <div className="login-container">
@@ -83,6 +96,7 @@ function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div className="input-row">
             <input
               className="input-field"
@@ -92,6 +106,7 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
           <button className="primary-btn" onClick={handleLogin}>
             Sign In
           </button>
@@ -104,6 +119,7 @@ function LoginPage() {
     );
   }
 
+  // ⭐ REGISTER VIEW
   if (view === "register") {
     return (
       <div className="login-container">
@@ -120,6 +136,7 @@ function LoginPage() {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
+
           <div className="input-row">
             <input
               className="input-field"
@@ -129,6 +146,7 @@ function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div className="input-row">
             <input
               className="input-field"
@@ -138,6 +156,7 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
           <div className="input-row">
             <input
               className="input-field"
@@ -147,6 +166,7 @@ function LoginPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
+
           <button className="primary-btn" onClick={handleRegister}>
             Create Account
           </button>
@@ -159,7 +179,7 @@ function LoginPage() {
     );
   }
 
-  // main view 
+  // ⭐ MAIN VIEW
   return (
     <div className="login-container">
       <h2>Calendar Assistant</h2>
@@ -181,7 +201,6 @@ function LoginPage() {
         <button className="secondary-btn" onClick={() => setView("register")}>
           Create an Account
         </button>
-    
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 console.log("db.js is loading...");
+console.log("connetcing to DB :", process.env.DB_NAME);
 
 const db = await mysql.createPool({
   host: process.env.DB_HOST,

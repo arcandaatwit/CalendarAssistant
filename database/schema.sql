@@ -27,3 +27,21 @@ CREATE TABLE IF NOT EXISTS tasks (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+CREATE TABLE EVENTS (
+    ind INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,   
+
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+
+    category ENUM('work', 'personal', 'kids', 'health', 'other') NOT NULL,
+    priority ENUM('low', 'medium', 'high') NOT NULL default 'medium',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+);
