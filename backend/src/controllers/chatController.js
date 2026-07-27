@@ -10,9 +10,8 @@ function formatSchedule(events, tasks) {
 
   const taskLines = tasks.length
     ? tasks.map((t) =>
-        `- ${t.title} (${t.priority} priority${t.flag && t.flag !== "none" ? `, ${t.flag}` : ""})` +
-        (t.deadline ? ` — due ${t.deadline}` : "") +
-        ` [${t.status}]`
+        `- ${t.title} (${t.type}, ${t.priority} priority)` +
+        (t.date ? ` — due ${t.date}${t.time ? ` ${t.time}` : ""}` : "")
       ).join("\n")
     : "None.";
 
@@ -41,9 +40,9 @@ export const sendMessage = async (req, res) => {
     );
 
     const [tasks] = await db.execute(
-      `SELECT title, description, location, priority, flag, deadline, status
-       FROM tasks WHERE user_id = ? AND status != 'completed'
-       ORDER BY deadline IS NULL, deadline ASC LIMIT 20`,
+      `SELECT title, type, date, time, priority
+       FROM tasks WHERE user_id = ? AND completed = 0
+       ORDER BY date IS NULL, date ASC LIMIT 20`,
       [user_id]
     );
 

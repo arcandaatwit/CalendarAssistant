@@ -36,7 +36,8 @@ function validateTask(task) {
 // ------------------------------------------------------------
 export const createTask = async (req, res) => {
     try {
-        let { title, type, date, time, priority, user_id } = req.body;
+        const user_id = req.user.id;
+        let { title, type, date, time, priority } = req.body;
 
         let task = { title, type, date, time, priority, user_id };
 
@@ -73,6 +74,7 @@ export const createTask = async (req, res) => {
 export const updateTask = async (req, res) => {
     try {
         const { id } = req.params;
+        const user_id = req.user.id;
         let { title, type, date, time, completed, priority } = req.body;
 
         let task = { title, type, date, time, completed, priority };
@@ -85,7 +87,7 @@ export const updateTask = async (req, res) => {
         const sql = `
             UPDATE tasks
             SET title = ?, type = ?, date = ?, time = ?, completed = ?, priority = ?
-            WHERE id = ?
+            WHERE id = ? AND user_id = ?
         `;
 
         await db.query(sql, [
@@ -95,7 +97,8 @@ export const updateTask = async (req, res) => {
             task.time,
             task.completed ?? 0,
             task.priority || "medium",
-            id
+            id,
+            user_id
         ]);
 
         res.json({ message: "Task updated successfully." });
@@ -111,7 +114,7 @@ export const updateTask = async (req, res) => {
 // ------------------------------------------------------------
 export const getTasks = async (req, res) => {
     try {
-        const { user_id } = req.params;
+        const user_id = req.user.id;
 
         const sql = `
             SELECT * FROM tasks
@@ -135,10 +138,11 @@ export const getTasks = async (req, res) => {
 export const getTask = async (req, res) => {
     try {
         const { id } = req.params;
+        const user_id = req.user.id;
 
-        const sql = `SELECT * FROM tasks WHERE id = ?`;
+        const sql = `SELECT * FROM tasks WHERE id = ? AND user_id = ?`;
 
-        const [rows] = await db.query(sql, [id]);
+        const [rows] = await db.query(sql, [id, user_id]);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: "Task not found." });
@@ -158,10 +162,11 @@ export const getTask = async (req, res) => {
 export const deleteTask = async (req, res) => {
     try {
         const { id } = req.params;
+        const user_id = req.user.id;
 
-        const sql = `DELETE FROM tasks WHERE id = ?`;
+        const sql = `DELETE FROM tasks WHERE id = ? AND user_id = ?`;
 
-        await db.query(sql, [id]);
+        await db.query(sql, [id, user_id]);
 
         res.json({ message: "Task deleted successfully." });
 

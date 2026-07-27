@@ -15,8 +15,7 @@ export default function ProfilePage() {
     { id: "sea",    label: "Sea",    colors: ["#f3f8fa", "#4fa3b5", "#dcebf0"] },
   ];
 
-  const token = localStorage.getItem("token");
-  const googleToken = localStorage.getItem("access_token");
+  const userEmail = localStorage.getItem("userEmail");
 
   const addTag = () => {
     const t = newTag.trim();
@@ -57,28 +56,6 @@ export default function ProfilePage() {
           >
             Sign Out
           </button>
-        </div>
-
-        {/* Appearance */}
-        <div className="card-box" style={{ marginBottom: "16px" }}>
-          <h3 style={{ marginBottom: "12px" }}>Appearance</h3>
-          <div style={{ display: "flex", gap: "10px" }}>
-            {THEMES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                className={`theme-swatch ${theme === t.id ? "active" : ""}`}
-                onClick={() => setTheme(t.id)}
-              >
-                <span className="theme-swatch-preview">
-                  {t.colors.map((c, i) => (
-                    <span key={i} style={{ background: c }} />
-                  ))}
-                </span>
-                {t.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Appearance */}
