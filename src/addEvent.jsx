@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSettings, usePersisted } from "./App";
 import { findOpenSlots } from "./scheduler/probability";
-import "./index.css";
+import ChatWidget from "./ChatWidget";
+import './index.css';
 
 function pad(n) { return String(n).padStart(2, "0"); }
 function toDateInput(date) { return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`; }
@@ -20,8 +21,9 @@ export default function AddEventPage() {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [eventDescription, setEventDescription] = useState("");
-  const [category, setCategory] = useState("Personal");
-  const [priority, setPriority] = useState("medium");
+  const [category, setCategory]             = useState("Personal");
+  const [priority, setPriority]             = useState("medium");
+  const [editingId, setEditingId]           = useState(null);
 
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionsRan, setSuggestionsRan] = useState(false);
@@ -51,13 +53,31 @@ export default function AddEventPage() {
     setSuggestionsRan(false);
   };
 
-  // -----------------------------
-  // ADD EVENT
-  // -----------------------------
-  const addEvent = async () => {
-    if (!eventTitle.trim()) return;
-    if (!eventDate) return alert("Please select a date.");
-    if (!startTime || !endTime) return alert("Please select start and end time.");
+ const resetForm = () => {
+  setEventTitle("");
+  setEventDate("");
+  setStartTime("");
+  setEndTime("");
+  setEventDescription("");
+  setCategory("Personal");
+  setPriority("medium");
+  setEditingId(null);
+};
+
+ const startEditEvent = (event) => {
+  setEditingId(event.id);
+  setEventTitle(event.title);
+  setEventDate(event.date);
+  setStartTime(event.startTime);
+  setEndTime(event.endTime);
+  setEventDescription(event.description || "");
+  // stored category is lowercase; match it back to the display-cased option
+  setCategory(categories.find((c) => c.toLowerCase() === event.category) || categories[0]);
+  setPriority(event.priority);
+};
+
+ const saveEvent = async () => {
+  if (!eventTitle.trim()) return;
 
     const token = localStorage.getItem("token");
     if (!token) return alert("You must be logged in.");
@@ -75,8 +95,28 @@ export default function AddEventPage() {
       priority
     };
 
-    try {
-      const res = await fetch("/api/events", {
+  try {
+    if (editingId) {
+      const res = await fetch(`/api/events/${editingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        alert("Failed to update event");
+        return;
+      }
+
+      setEvents(events.map((e) => e.id === editingId
+        ? { ...e, title: eventTitle, description: eventDescription, date: eventDate, startTime, endTime, category: category.toLowerCase(), priority }
+        : e
+      ));
+    } else {
+      const res = await fetch("http://localhost:5000/api/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,59 +126,51 @@ export default function AddEventPage() {
       });
 
       const data = await res.json();
+
       if (!res.ok) {
+        alert("Failed to create event");
         console.error(data);
-        return alert("Failed to create event");
+        return;
       }
 
-      setEvents([...safeEvents, data]);
-
-      setEventTitle("");
-      setEventDate("");
-      setStartTime("");
-      setEndTime("");
-      setEventDescription("");
-      setCategory("Personal");
-      setPriority("medium");
-
-    } catch (err) {
-      console.error(err);
-      alert("Error creating event");
+      // Add returned event to UI
+      setEvents([...events, {
+        ...data,
+        startTime: data.start_time?.slice(0, 5),
+        endTime: data.end_time?.slice(0, 5),
+      }]);
     }
-  };
 
-  // -----------------------------
-  // DELETE EVENT
-  // -----------------------------
+    resetForm();
+
+  } catch (err) {
+    console.error(err);
+    alert(editingId ? "Error updating event" : "Error creating event");
+  }
+};
+
   const deleteEvent = async (id) => {
     const token = localStorage.getItem("token");
-    if (!token) return alert("You must be logged in.");
-
     try {
       const res = await fetch(`/api/events/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      const data = await res.json();
       if (!res.ok) {
-        console.error(data);
-        return alert("Failed to delete event");
+        alert("Failed to delete event");
+        return;
       }
 
-      setEvents(safeEvents.filter(e => e.id !== id));
-
+      setEvents(events.filter((e) => e.id !== id));
+      if (editingId === id) resetForm();
     } catch (err) {
       console.error(err);
       alert("Error deleting event");
     }
   };
 
-  // -----------------------------
-  // SORT EVENTS BY PRIORITY
-  // -----------------------------
+  // sort by priority: high first
   const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
   const sortedEvents = [...safeEvents].sort(
     (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
@@ -264,9 +296,16 @@ export default function AddEventPage() {
             />
           </div>
 
-          <button className="primary-btn" onClick={addEvent}>
-            Add
-          </button>
+          <div className="input-row" style={{ gap: "8px" }}>
+            <button className="primary-btn" style={{ flex: 1 }} onClick={saveEvent}>
+              {editingId ? "Save Changes" : "Add"}
+            </button>
+            {editingId && (
+              <button type="button" className="secondary-btn" onClick={resetForm}>
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
 
         {sortedEvents.length > 0 && (
@@ -281,13 +320,24 @@ export default function AddEventPage() {
                 >
                   <div className="task-row" style={{ justifyContent: "space-between" }}>
                     <span style={{ fontWeight: "500", color: "var(--text-h)" }}>{e.title}</span>
-                    <button
-                      className="link-btn"
-                      style={{ fontSize: "12px", padding: "0" }}
-                      onClick={() => deleteEvent(e.id)}
-                    >
-                      Remove
-                    </button>
+                    {!String(e.id).startsWith("google-") && (
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <button
+                          className="link-btn"
+                          style={{ fontSize: "12px", padding: "0" }}
+                          onClick={() => startEditEvent(e)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="link-btn"
+                          style={{ fontSize: "12px", padding: "0" }}
+                          onClick={() => deleteEvent(e.id)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="task-meta">
@@ -299,6 +349,9 @@ export default function AddEventPage() {
                       >
                         {e.priority}
                       </span>
+                      {String(e.id).startsWith("google-") && (
+                        <span className="task-tag">From Google Calendar</span>
+                      )}
                     </div>
 
                     {e.date && (
@@ -329,6 +382,8 @@ export default function AddEventPage() {
         <Link to="/taskPage" className={`nav-btn ${location.pathname === "/taskPage" ? "active" : ""}`}>Task</Link>
         <Link to="/profile" className={`nav-btn ${location.pathname === "/profile" ? "active" : ""}`}>Profile</Link>
       </div>
+
+      <ChatWidget />
 
     </div>
   );

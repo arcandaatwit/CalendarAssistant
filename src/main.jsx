@@ -80,6 +80,7 @@ export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
   const location = useLocation();
   const { events, setEvents } = useSettings();
+  const { events, setEvents } = useSettings();
 
   const safeEvents = Array.isArray(events) ? events : [];
 
@@ -137,20 +138,31 @@ export default function MainPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
+    if (!token) return;
 
     fetch("/api/events", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
-        const backendEvents =
-          Array.isArray(data)
-            ? data
-            : Array.isArray(data.events)
-              ? data.events
-              : [];
+        // Convert DB events → the shape addEvent.jsx/the calendar expect
+        const formatted = data.map(ev => ({
+          id: ev.id,
+          title: ev.title,
+          description: ev.description || "",
+          date: ev.date,
+          startTime: ev.start_time?.slice(0, 5),
+          endTime: ev.end_time?.slice(0, 5),
+          category: ev.category,
+          priority: ev.priority,
+        }));
 
-        setEvents(backendEvents);
+        // Keep any Google-sourced events (loaded separately, tagged "google-")
+        // instead of clobbering them with this DB-only fetch.
+        setEvents((prev) => [
+          ...formatted,
+          ...prev.filter((e) => String(e.id).startsWith("google-")),
+        ]);
       })
       .catch(err => console.error("Error loading events:", err));
   }, [location.pathname]);
