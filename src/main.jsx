@@ -80,7 +80,7 @@ export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
   const location = useLocation();
   const { events, setEvents } = useSettings();
-  const { events, setEvents } = useSettings();
+  
 
   const safeEvents = Array.isArray(events) ? events : [];
 
