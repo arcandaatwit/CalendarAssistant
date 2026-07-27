@@ -36,10 +36,12 @@ passport.use(
         );
 
         if (existing.length > 0) {
-          // ⭐ ALWAYS update Google fields
+          // ⭐ ALWAYS update Google fields. Google only sends a refresh
+          // token on the user's first consent, so COALESCE keeps whatever
+          // we already have instead of wiping it out on later logins.
           await db.execute(
-            "UPDATE users SET google_id = ?, name = ?, profile_pic = ? WHERE email = ?",
-            [googleId, name, picture, email]
+            "UPDATE users SET google_id = ?, name = ?, profile_pic = ?, google_refresh_token = COALESCE(?, google_refresh_token) WHERE email = ?",
+            [googleId, name, picture, refreshToken || null, email]
           );
 
           // Return updated user
@@ -53,8 +55,8 @@ passport.use(
 
         // 2️⃣ If user does NOT exist → create new Google user
         const [result] = await db.execute(
-          "INSERT INTO users (email, google_id, name, profile_pic) VALUES (?, ?, ?, ?)",
-          [email, googleId, name, picture]
+          "INSERT INTO users (email, google_id, name, profile_pic, google_refresh_token) VALUES (?, ?, ?, ?, ?)",
+          [email, googleId, name, picture, refreshToken || null]
         );
 
         return done(null, {
@@ -62,7 +64,8 @@ passport.use(
           email,
           google_id: googleId,
           name,
-          profile_pic: picture
+          profile_pic: picture,
+          google_refresh_token: refreshToken || null
         });
 
       } catch (err) {

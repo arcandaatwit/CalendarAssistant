@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { usePersisted } from "./App";
+import { useSettings, TASK_TYPE_TO_API } from "./App";
 import ChatWidget from "./ChatWidget";
 import "./index.css";
 
@@ -16,34 +16,104 @@ function TasksPage() {
   const [taskDate, setTaskDate]   = useState("");
   const [taskTime, setTaskTime]   = useState("");
 
-  const [tasks, setTasks] = usePersisted("tasks", []);
+  const { tasks, setTasks, refreshTasks } = useSettings();
 
-  const addTask = () => {
+  const addTask = async () => {
     if (!taskTitle.trim()) return;
 
-    const newTask = {
-      id: Date.now(),
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You must be logged in.");
+      return;
+    }
+
+    const payload = {
       title: taskTitle,
-      type: taskType,
-      date: taskDate,
-      time: taskTime,
-      completed: false,
+      type: TASK_TYPE_TO_API[taskType] || "To-Do",
+      date: taskType === "todo" ? null : taskDate,
+      time: taskType === "todo" ? null : taskTime,
+      priority: "medium",
     };
 
-    setTasks([...tasks, newTask]);
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-    setTaskTitle("");
-    setTaskType("todo");
-    setTaskDate("");
-    setTaskTime("");
+      if (!res.ok) {
+        alert("Failed to create task");
+        return;
+      }
+
+      // createTask only returns a status message, not the created row — refetch.
+      refreshTasks();
+
+      setTaskTitle("");
+      setTaskType("todo");
+      setTaskDate("");
+      setTaskTime("");
+    } catch (err) {
+      console.error(err);
+      alert("Error creating task");
+    }
   };
 
-  const toggleComplete = (id) => {
-    setTasks(tasks.map((t) => t.id === id ? { ...t, completed: !t.completed } : t));
+  const toggleComplete = async (task) => {
+    const token = localStorage.getItem("token");
+    const payload = {
+      title: task.title,
+      type: TASK_TYPE_TO_API[task.type] || "To-Do",
+      date: task.date,
+      time: task.time,
+      priority: task.priority,
+      completed: task.completed ? 0 : 1,
+    };
+
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        alert("Failed to update task");
+        return;
+      }
+
+      setTasks(tasks.map((t) => t.id === task.id ? { ...t, completed: !t.completed } : t));
+    } catch (err) {
+      console.error(err);
+      alert("Error updating task");
+    }
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((t) => t.id !== id));
+  const deleteTask = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        alert("Failed to delete task");
+        return;
+      }
+
+      setTasks(tasks.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting task");
+    }
   };
 
   const pending   = tasks.filter((t) => !t.completed);
@@ -117,13 +187,15 @@ function TasksPage() {
                     <input
                       type="checkbox"
                       checked={t.completed}
-                      onChange={() => toggleComplete(t.id)}
+                      disabled={String(t.id).startsWith("google-")}
+                      onChange={() => toggleComplete(t)}
                     />
                     <span>{t.title}</span>
                   </label>
                   <div className="task-meta">
                     <span className="task-tag">{TYPE_LABELS[t.type]}</span>
                     {t.date && <span> · {t.date}{t.time ? ` at ${t.time}` : ""}</span>}
+                    {String(t.id).startsWith("google-") && <span className="task-tag">Google Tasks</span>}
                   </div>
                 </div>
               ))}
@@ -142,19 +214,22 @@ function TasksPage() {
                     <input
                       type="checkbox"
                       checked={t.completed}
-                      onChange={() => toggleComplete(t.id)}
+                      disabled={String(t.id).startsWith("google-")}
+                      onChange={() => toggleComplete(t)}
                     />
                     <span className="task-done">{t.title}</span>
                   </label>
                   <div className="task-meta" style={{ display: "flex", justifyContent: "space-between" }}>
                     <span className="task-tag">{TYPE_LABELS[t.type]}</span>
-                    <button
-                      className="link-btn"
-                      style={{ fontSize: "12px", padding: "0" }}
-                      onClick={() => deleteTask(t.id)}
-                    >
-                      Remove
-                    </button>
+                    {!String(t.id).startsWith("google-") && (
+                      <button
+                        className="link-btn"
+                        style={{ fontSize: "12px", padding: "0" }}
+                        onClick={() => deleteTask(t.id)}
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

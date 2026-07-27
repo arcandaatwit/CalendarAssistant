@@ -79,10 +79,10 @@ function getUSHolidays(year) {
 export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
   const location = useLocation();
-  const { events, setEvents } = useSettings();
-  
+  const { events, setEvents, tasks } = useSettings();
 
   const safeEvents = Array.isArray(events) ? events : [];
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
 
   // -----------------------------
   // HOLIDAYS FOR CURRENT YEAR
@@ -98,7 +98,26 @@ export default function MainPage() {
   }));
 
   // -----------------------------
-  // MERGE BACKEND EVENTS + HOLIDAYS
+  // SCHEDULED/REMINDER TASKS → CALENDAR BLOCKS
+  // -----------------------------
+  const taskEvents = safeTasks
+    .filter((t) => t.date && !t.completed)
+    .map((t) => {
+      const dateOnly = t.date.includes("T") ? t.date.split("T")[0] : t.date;
+      const time = t.time?.slice(0, 5) || "09:00";
+      const start = new Date(`${dateOnly}T${time}`);
+      const end = new Date(start.getTime() + 30 * 60000);
+
+      return {
+        id: `task-${t.id}`,
+        title: `Task: ${t.title}`,
+        start,
+        end
+      };
+    });
+
+  // -----------------------------
+  // MERGE BACKEND EVENTS + TASKS + HOLIDAYS
   // -----------------------------
   const calendarEvents = [
     ...safeEvents.map(e => {
@@ -114,6 +133,7 @@ export default function MainPage() {
       };
     }),
 
+    ...taskEvents,
     ...holidayEvents
   ];
 
@@ -137,7 +157,6 @@ export default function MainPage() {
   // -----------------------------
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return;
     if (!token) return;
 
     fetch("/api/events", {

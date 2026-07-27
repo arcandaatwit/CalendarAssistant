@@ -12,7 +12,10 @@ router.get(
       "profile",
       "email",
       "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/tasks.readonly",
     ],
+    accessType: "offline", // required for Google to issue a refresh token
+    prompt: "consent",     // forces the consent screen so we actually get one
     session: false, // explicitly no session
   })
 );

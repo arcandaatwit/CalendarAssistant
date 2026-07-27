@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useSettings, usePersisted } from "./App";
+import { useSettings } from "./App";
 import { findOpenSlots } from "./scheduler/probability";
 import ChatWidget from "./ChatWidget";
 import './index.css';
@@ -11,10 +11,8 @@ function toTimeInput(date) { return `${pad(date.getHours())}:${pad(date.getMinut
 
 export default function AddEventPage() {
   const location = useLocation();
-  const { priorityColors, categories, events, setEvents } = useSettings();
+  const { priorityColors, categories, events, setEvents, tasks } = useSettings();
   const safeEvents = Array.isArray(events) ? events : [];
-
-  const [tasks] = usePersisted("tasks", []);
 
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
