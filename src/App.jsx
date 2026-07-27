@@ -20,6 +20,18 @@ function load(key, fallback) {
   catch { return fallback; }
 }
 
+// Email/password login already stores "userEmail" itself, but the Google
+// OAuth redirect only gives us a JWT — decode its payload (which already
+// carries the email, see googleAuthRoutes.js) so Profile can show it too.
+function decodeJwtEmail(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.email || null;
+  } catch {
+    return null;
+  }
+}
+
 export function usePersisted(key, fallback) {
   const [val, setVal] = useState(() => load(key, fallback));
   const set = (v) => { setVal(v); localStorage.setItem(key, JSON.stringify(v)); };
@@ -76,6 +88,13 @@ function App() {
 
     const token = localStorage.getItem("token");
     if (!token) return;
+
+    // Backfill userEmail from the JWT if it's missing — covers the Google
+    // sign-in flow (email/password login already sets this on its own).
+    if (!localStorage.getItem("userEmail")) {
+      const email = decodeJwtEmail(token);
+      if (email) localStorage.setItem("userEmail", email);
+    }
 
     refreshTasks();
 
