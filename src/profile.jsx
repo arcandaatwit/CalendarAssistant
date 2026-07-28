@@ -6,7 +6,7 @@ import "./index.css";
 export default function ProfilePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { priorityColors, setPriorityColors, categories, setCategories, theme, setTheme } = useSettings();
+  const { priorityColors, setPriorityColors, categories, setCategories, theme, setTheme, setEvents, setTasks } = useSettings();
   const [newTag, setNewTag] = useState("");
 
   const THEMES = [
@@ -51,6 +51,10 @@ export default function ProfilePage() {
               localStorage.removeItem("token");
               localStorage.removeItem("access_token");
               localStorage.removeItem("userEmail");
+              // Context state (tasks/events) lives in App.jsx and survives a client-side
+              // navigate — clear it here so the next login doesn't inherit this account's data.
+              setEvents([]);
+              setTasks([]);
               navigate("/");
             }}
           >

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSettings, TASK_TYPE_TO_API } from "./App";
 import ChatWidget from "./ChatWidget";
@@ -37,6 +37,13 @@ function TasksPage() {
   const [taskTime, setTaskTime]   = useState("");
 
   const { tasks, setTasks, refreshTasks } = useSettings();
+
+  // Routes remount this component fresh on every navigation, so this refetches
+  // whichever account's token is current — fixes tasks staying stale across
+  // a sign-out/sign-in that didn't do a full page reload.
+  useEffect(() => {
+    refreshTasks();
+  }, []);
 
   const addTask = async () => {
     if (!taskTitle.trim()) return;
