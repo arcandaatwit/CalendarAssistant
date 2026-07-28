@@ -265,7 +265,7 @@ export default function AddEventPage() {
                   style={{ flex: "1 1 45%" }}
                   onClick={() => applySuggestion(s)}
                 >
-                  {s.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} · {toTimeInput(s.date)}
+                  {s.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} · {s.date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                 </button>
               ))}
             </div>
