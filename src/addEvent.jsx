@@ -62,7 +62,7 @@ export default function AddEventPage() {
       if (diff > 0) durationMinutes = diff;
     }
 
-    setSuggestions(findOpenSlots({ events: safeEvents, tasks, durationMinutes, title: eventTitle, date: eventDate }));
+    setSuggestions(findOpenSlots({ events: safeEvents, tasks, durationMinutes, title: eventTitle, date: eventDate, category: category.toLowerCase() }));
     setSuggestionsRan(true);
   };
 

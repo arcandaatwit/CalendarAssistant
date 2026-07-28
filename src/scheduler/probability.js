@@ -123,13 +123,21 @@ function titlesMatch(a, b) {
  *                         omitted, it's inferred from the average length of
  *                         title-matched past events (falling back to 60
  *                         minutes if there's no match to learn from).
+ * @param {string} [category] - "work" keeps the whole slot within the 9-5
+ *                         work day; "personal" keeps it entirely outside
+ *                         9-5 (before work or in the evening). Any other
+ *                         category is left unconstrained.
  */
+const WORK_START_HOUR = 9;
+const WORK_END_HOUR = 17;
+
 export function findOpenSlots({
   events = [],
   tasks = [],
   title = "",
   date = "",
   durationMinutes,
+  category = "",
   days = 14,
   startHour = 6,
   endHour = 21,
@@ -197,6 +205,23 @@ export function findOpenSlots({
         if (start < now) continue;
 
         const end = new Date(start.getTime() + effectiveDuration * 60000);
+
+        if (category === "work" || category === "personal") {
+          const workStart = new Date(dayDate);
+          workStart.setHours(WORK_START_HOUR, 0, 0, 0);
+          const workEnd = new Date(dayDate);
+          workEnd.setHours(WORK_END_HOUR, 0, 0, 0);
+
+          if (category === "work") {
+            const withinWorkHours = start >= workStart && end <= workEnd;
+            if (!withinWorkHours) continue;
+          } else {
+            // personal: skip anything that overlaps the work window at all,
+            // not just slots fully inside it.
+            if (overlaps(start, end, workStart, workEnd)) continue;
+          }
+        }
+
         const conflict = busy.some((b) => overlaps(start, end, b.start, b.end));
         if (conflict) continue;
 

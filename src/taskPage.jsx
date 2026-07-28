@@ -95,7 +95,10 @@ function TasksPage() {
     const payload = {
       title: task.title,
       type: TASK_TYPE_TO_API[task.type] || "To-Do",
-      date: task.date,
+      // task.date comes back from the DB fetch as a full ISO timestamp
+      // ("2026-07-28T04:00:00.000Z") — MySQL's DATE column rejects that
+      // outright, so strip it down to "YYYY-MM-DD" before sending it back.
+      date: task.date ? String(task.date).slice(0, 10) : task.date,
       time: task.time,
       priority: task.priority,
       completed: task.completed ? 0 : 1,
