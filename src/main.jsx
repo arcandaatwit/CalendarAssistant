@@ -78,6 +78,7 @@ function getUSHolidays(year) {
 // -----------------------------
 export default function MainPage() {
   const [viewIndex, setViewIndex] = useState(0);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const location = useLocation();
   const { events, setEvents, tasks } = useSettings();
 
@@ -94,7 +95,8 @@ export default function MainPage() {
     id: `holiday-${h.date}`,
     title: h.title,
     start: new Date(`${h.date}T00:00`),
-    end: new Date(`${h.date}T23:59`)
+    end: new Date(`${h.date}T23:59`),
+    resource: { type: "holiday" }
   }));
 
   // -----------------------------
@@ -112,7 +114,8 @@ export default function MainPage() {
         id: `task-${t.id}`,
         title: `Task: ${t.title}`,
         start,
-        end
+        end,
+        resource: { type: "task", taskType: t.type, priority: t.priority }
       };
     });
 
@@ -129,7 +132,8 @@ export default function MainPage() {
         id: e.id,
         title: e.title,
         start: new Date(`${dateOnly}T${startTime}`),
-        end: new Date(`${dateOnly}T${endTime}`)
+        end: new Date(`${dateOnly}T${endTime}`),
+        resource: { type: "event", description: e.description, category: e.category, priority: e.priority }
       };
     }),
 
@@ -212,10 +216,49 @@ export default function MainPage() {
             endAccessor="end"
             view={currentView}
             onView={(v) => setViewIndex(VIEWS.indexOf(v))}
+            onSelectEvent={(event) => setSelectedEvent(event)}
             views={VIEWS}
             style={{ height: "100%", width: "100%" }}
           />
         </div>
+
+        {selectedEvent && (
+          <div className="card-box" style={{ marginTop: "16px" }}>
+            <div className="task-row" style={{ justifyContent: "space-between" }}>
+              <span style={{ fontWeight: "600", color: "var(--text-h)" }}>{selectedEvent.title}</span>
+              <button
+                className="link-btn"
+                style={{ fontSize: "12px", padding: "0" }}
+                onClick={() => setSelectedEvent(null)}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="task-meta">
+              <p>
+                {selectedEvent.start.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                {" · "}
+                {selectedEvent.start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                {" – "}
+                {selectedEvent.end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+              </p>
+
+              {(selectedEvent.resource?.category || selectedEvent.resource?.priority) && (
+                <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                  {selectedEvent.resource?.category && (
+                    <span className="task-tag">{selectedEvent.resource.category}</span>
+                  )}
+                  {selectedEvent.resource?.priority && (
+                    <span className="task-tag">{selectedEvent.resource.priority}</span>
+                  )}
+                </div>
+              )}
+
+              {selectedEvent.resource?.description && <p>{selectedEvent.resource.description}</p>}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bottom-nav">

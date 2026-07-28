@@ -10,6 +10,26 @@ const TYPE_LABELS = {
   scheduled: "Scheduled",
 };
 
+// task.date comes back as a full ISO timestamp once it crosses JSON
+// (e.g. "2026-07-28T04:00:00.000Z"); task.time as "HH:MM:SS". Format both
+// down to just what's worth showing.
+function formatDate(value) {
+  if (!value) return "";
+  const dateOnly = String(value).slice(0, 10);
+  const d = new Date(`${dateOnly}T00:00`);
+  if (isNaN(d.getTime())) return dateOnly;
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+function formatTime(value) {
+  if (!value) return "";
+  const [h, m] = String(value).slice(0, 5).split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return value;
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
 function TasksPage() {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskType, setTaskType]   = useState("todo");
@@ -194,7 +214,7 @@ function TasksPage() {
                   </label>
                   <div className="task-meta">
                     <span className="task-tag">{TYPE_LABELS[t.type]}</span>
-                    {t.date && <span> · {t.date}{t.time ? ` at ${t.time}` : ""}</span>}
+                    {t.date && <span> · {formatDate(t.date)}{t.time ? ` at ${formatTime(t.time)}` : ""}</span>}
                     {String(t.id).startsWith("google-") && <span className="task-tag">Google Tasks</span>}
                   </div>
                 </div>

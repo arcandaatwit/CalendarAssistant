@@ -10,40 +10,64 @@ function buildOAuthClient(refreshToken) {
   return oauth2Client;
 }
 
-// Fetches upcoming Google Calendar events, mapped into the same shape
-// eventsController.mapEvent returns, so the frontend needs no special-casing.
+const PAST_HISTORY_DAYS = 90;
+
+function mapGoogleEvent(ev) {
+  const startISO = ev.start.dateTime || ev.start.date;
+  const endISO = ev.end?.dateTime || ev.end?.date || startISO;
+  const date = startISO.split("T")[0];
+  const start_time = startISO.includes("T") ? startISO.split("T")[1].slice(0, 5) : "00:00";
+  const end_time = endISO.includes("T") ? endISO.split("T")[1].slice(0, 5) : "23:59";
+
+  return {
+    id: `google-${ev.id}`,
+    title: ev.summary || "(untitled)",
+    description: ev.description || "",
+    date,
+    start_time,
+    end_time,
+    category: "google",
+    priority: "medium",
+  };
+}
+
+// Fetches Google Calendar events — both past (for the scheduler's history
+// scoring) and upcoming (for conflict-avoidance) — mapped into the same
+// shape eventsController.mapEvent returns, so the frontend needs no
+// special-casing. Past and upcoming are fetched as two separate calls so a
+// busy history can't crowd out `maxResults` and cut off upcoming events,
+// which matter more for conflict-avoidance.
 export async function fetchGoogleEvents(refreshToken) {
   const auth = buildOAuthClient(refreshToken);
   const calendar = google.calendar({ version: "v3", auth });
 
-  const res = await calendar.events.list({
-    calendarId: "primary",
-    singleEvents: true,
-    orderBy: "startTime",
-    timeMin: new Date().toISOString(),
-    maxResults: 50,
-  });
+  const now = new Date();
+  const pastStart = new Date(now.getTime() - PAST_HISTORY_DAYS * 24 * 60 * 60 * 1000);
 
-  return (res.data.items || [])
-    .filter((ev) => ev.start && (ev.start.dateTime || ev.start.date))
-    .map((ev) => {
-      const startISO = ev.start.dateTime || ev.start.date;
-      const endISO = ev.end?.dateTime || ev.end?.date || startISO;
-      const date = startISO.split("T")[0];
-      const start_time = startISO.includes("T") ? startISO.split("T")[1].slice(0, 5) : "00:00";
-      const end_time = endISO.includes("T") ? endISO.split("T")[1].slice(0, 5) : "23:59";
+  const [upcoming, past] = await Promise.all([
+    calendar.events.list({
+      calendarId: "primary",
+      singleEvents: true,
+      orderBy: "startTime",
+      timeMin: now.toISOString(),
+      maxResults: 50,
+    }),
+    calendar.events.list({
+      calendarId: "primary",
+      singleEvents: true,
+      orderBy: "startTime",
+      timeMin: pastStart.toISOString(),
+      timeMax: now.toISOString(),
+      maxResults: 100,
+    }),
+  ]);
 
-      return {
-        id: `google-${ev.id}`,
-        title: ev.summary || "(untitled)",
-        description: ev.description || "",
-        date,
-        start_time,
-        end_time,
-        category: "google",
-        priority: "medium",
-      };
-    });
+  const items = [...(past.data.items || []), ...(upcoming.data.items || [])];
+  const seen = new Set();
+
+  return items
+    .filter((ev) => ev.start && (ev.start.dateTime || ev.start.date) && !seen.has(ev.id) && seen.add(ev.id))
+    .map(mapGoogleEvent);
 }
 
 // Fetches Google Tasks, mapped into the same shape tasksController's rows

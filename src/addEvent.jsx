@@ -9,6 +9,26 @@ function pad(n) { return String(n).padStart(2, "0"); }
 function toDateInput(date) { return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`; }
 function toTimeInput(date) { return `${pad(date.getHours())}:${pad(date.getMinutes())}`; }
 
+// e.date comes back as a full ISO timestamp once it crosses JSON
+// (e.g. "2026-07-28T04:00:00.000Z"); startTime/endTime as 24-hour "HH:MM".
+// Format both down to just what's worth showing.
+function formatDate(value) {
+  if (!value) return "";
+  const dateOnly = String(value).slice(0, 10);
+  const d = new Date(`${dateOnly}T00:00`);
+  if (isNaN(d.getTime())) return dateOnly;
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+function formatTime(value) {
+  if (!value) return "";
+  const [h, m] = String(value).slice(0, 5).split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return value;
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
 export default function AddEventPage() {
   const location = useLocation();
   const { priorityColors, categories, events, setEvents, tasks } = useSettings();
@@ -30,7 +50,10 @@ export default function AddEventPage() {
   // SCHEDULER
   // -----------------------------
   const scheduleForMe = () => {
-    let durationMinutes = 60;
+    // Only pass a duration if the user actually set both times themselves —
+    // otherwise leave it undefined so findOpenSlots can infer a sensible
+    // one from how long this kind of event has run in the past.
+    let durationMinutes;
 
     if (startTime && endTime) {
       const [sh, sm] = startTime.split(":").map(Number);
@@ -39,7 +62,7 @@ export default function AddEventPage() {
       if (diff > 0) durationMinutes = diff;
     }
 
-    setSuggestions(findOpenSlots({ events: safeEvents, tasks, durationMinutes }));
+    setSuggestions(findOpenSlots({ events: safeEvents, tasks, durationMinutes, title: eventTitle, date: eventDate }));
     setSuggestionsRan(true);
   };
 
@@ -65,7 +88,9 @@ export default function AddEventPage() {
  const startEditEvent = (event) => {
   setEditingId(event.id);
   setEventTitle(event.title);
-  setEventDate(event.date);
+  // event.date may still be a full ISO timestamp from the DB
+  // (e.g. "2026-07-28T04:00:00.000Z") — <input type="date"> needs exactly "YYYY-MM-DD".
+  setEventDate(String(event.date).slice(0, 10));
   setStartTime(event.startTime);
   setEndTime(event.endTime);
   setEventDescription(event.description || "");
@@ -211,12 +236,14 @@ export default function AddEventPage() {
             <input
               className="input-field"
               type="time"
+              step="900"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
             />
             <input
               className="input-field"
               type="time"
+              step="900"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
             />
@@ -354,8 +381,8 @@ export default function AddEventPage() {
 
                     {e.date && (
                       <p>
-                        {e.date}
-                        {(e.startTime || e.endTime) ? ` · ${e.startTime} — ${e.endTime}` : ""}
+                        {formatDate(e.date)}
+                        {(e.startTime || e.endTime) ? ` · ${formatTime(e.startTime)} — ${formatTime(e.endTime)}` : ""}
                       </p>
                     )}
 
