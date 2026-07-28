@@ -122,8 +122,8 @@ export default function MainPage() {
   const calendarEvents = [
     ...safeEvents.map(e => {
       const dateOnly = e.date.includes("T") ? e.date.split("T")[0] : e.date;
-      const startTime = e.start_time?.slice(0, 5);
-      const endTime = e.end_time?.slice(0, 5);
+      const startTime = e.startTime;
+      const endTime = e.endTime;
 
       return {
         id: e.id,

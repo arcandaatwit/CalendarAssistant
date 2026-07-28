@@ -355,7 +355,7 @@ export default function AddEventPage() {
                     {e.date && (
                       <p>
                         {e.date}
-                        {(e.start_time || e.end_time) ? ` · ${e.start_time} — ${e.end_time}` : ""}
+                        {(e.startTime || e.endTime) ? ` · ${e.startTime} — ${e.endTime}` : ""}
                       </p>
                     )}
 
