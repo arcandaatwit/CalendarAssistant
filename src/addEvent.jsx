@@ -9,9 +9,7 @@ function pad(n) { return String(n).padStart(2, "0"); }
 function toDateInput(date) { return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`; }
 function toTimeInput(date) { return `${pad(date.getHours())}:${pad(date.getMinutes())}`; }
 
-// e.date comes back as a full ISO timestamp once it crosses JSON
-// (e.g. "2026-07-28T04:00:00.000Z"); startTime/endTime as 24-hour "HH:MM".
-// Format both down to just what's worth showing.
+// Format to just what's worth showing.
 function formatDate(value) {
   if (!value) return "";
   const dateOnly = String(value).slice(0, 10);
@@ -47,10 +45,10 @@ export default function AddEventPage() {
   const [suggestionsRan, setSuggestionsRan] = useState(false);
 
   // -----------------------------
-  // SCHEDULER
+  // SCHEDULER SECTION
   // -----------------------------
   const scheduleForMe = () => {
-    // Only pass a duration if the user actually set both times themselves —
+    // Only pass a duration if the user actually set both times 
     // otherwise leave it undefined so findOpenSlots can infer a sensible
     // one from how long this kind of event has run in the past.
     let durationMinutes;
@@ -88,13 +86,10 @@ export default function AddEventPage() {
  const startEditEvent = (event) => {
   setEditingId(event.id);
   setEventTitle(event.title);
-  // event.date may still be a full ISO timestamp from the DB
-  // (e.g. "2026-07-28T04:00:00.000Z") — <input type="date"> needs exactly "YYYY-MM-DD".
   setEventDate(String(event.date).slice(0, 10));
   setStartTime(event.startTime);
   setEndTime(event.endTime);
   setEventDescription(event.description || "");
-  // stored category is lowercase; match it back to the display-cased option
   setCategory(categories.find((c) => c.toLowerCase() === event.category) || categories[0]);
   setPriority(event.priority);
 };
@@ -200,7 +195,7 @@ export default function AddEventPage() {
   );
 
   // -----------------------------
-  // RENDER
+  // SHOW ALL EVENTS
   // -----------------------------
   return (
     <div className="app-container">

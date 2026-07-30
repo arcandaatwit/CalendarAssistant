@@ -11,8 +11,7 @@ const TYPE_LABELS = {
 };
 
 // task.date comes back as a full ISO timestamp once it crosses JSON
-// (e.g. "2026-07-28T04:00:00.000Z"); task.time as "HH:MM:SS". Format both
-// down to just what's worth showing.
+// Format both own to just what's worth showing.
 function formatDate(value) {
   if (!value) return "";
   const dateOnly = String(value).slice(0, 10);
@@ -39,8 +38,7 @@ function TasksPage() {
   const { tasks, setTasks, refreshTasks } = useSettings();
 
   // Routes remount this component fresh on every navigation, so this refetches
-  // whichever account's token is current — fixes tasks staying stale across
-  // a sign-out/sign-in that didn't do a full page reload.
+  // whichever account's token is current 
   useEffect(() => {
     refreshTasks();
   }, []);
@@ -77,7 +75,7 @@ function TasksPage() {
         return;
       }
 
-      // createTask only returns a status message, not the created row — refetch.
+      // createTask refresh
       refreshTasks();
 
       setTaskTitle("");
@@ -95,9 +93,6 @@ function TasksPage() {
     const payload = {
       title: task.title,
       type: TASK_TYPE_TO_API[task.type] || "To-Do",
-      // task.date comes back from the DB fetch as a full ISO timestamp
-      // ("2026-07-28T04:00:00.000Z") — MySQL's DATE column rejects that
-      // outright, so strip it down to "YYYY-MM-DD" before sending it back.
       date: task.date ? String(task.date).slice(0, 10) : task.date,
       time: task.time,
       priority: task.priority,

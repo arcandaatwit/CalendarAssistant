@@ -52,7 +52,7 @@ export default function ProfilePage() {
               localStorage.removeItem("access_token");
               localStorage.removeItem("userEmail");
               // Context state (tasks/events) lives in App.jsx and survives a client-side
-              // navigate — clear it here so the next login doesn't inherit this account's data.
+              // navigation. Clear it here so the next login doesn't inherit this account's data.
               setEvents([]);
               setTasks([]);
               navigate("/");

@@ -1,4 +1,4 @@
-/* theme variables — "spring" (default) */
+/* theme variables "spring" (default) */
 :root {
   --bg: #faf9fc;
   --body-bg: #e8e4f0;
@@ -15,7 +15,7 @@
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
 }
 
-/* "sunset" theme — warm coral/amber tones */
+/* "sunset" theme  warm coral/amber tones */
 :root[data-theme="sunset"] {
   --bg: #fdf6f1;
   --body-bg: #f5e2d3;
@@ -29,7 +29,7 @@
   --border-light: #f6e9df;
 }
 
-/* "sea" theme — cool teal/blue tones */
+/* "sea" theme cool teal/blue tones */
 :root[data-theme="sea"] {
   --bg: #f3f8fa;
   --body-bg: #dcebf0;
@@ -59,7 +59,7 @@ body {
   transition: background 0.2s ease;
 }
 
-/* phone shell — centers a ~390px column on desktop, full width on mobile */
+/* phone shell centers a ~390px column on desktop, full width on mobile */
 .app-container {
   width: 100%;
   max-width: 430px;
@@ -84,7 +84,7 @@ body {
   color: var(--text-h);
 }
 
-/* scrollable main area — leaves room for bottom nav */
+/* scrollable main area leaves room for bottom nav */
 .page-content {
   flex: 1;
   overflow-y: auto;
@@ -92,7 +92,7 @@ body {
   padding-bottom: 80px;
 }
 
-/* bottom nav — pinned to bottom of the phone shell */
+/* bottom nav pinned to bottom of the phone shell */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -454,9 +454,7 @@ body {
   text-align: center;
 }
 
-/* Gemini chat widget — anchored to the same centered phone-shell column the
-   bottom-nav uses, so it stays right-aligned to it (not the browser window)
-   on wide viewports. */
+/* Gemini chat widget. */
 .chat-widget-anchor {
   position: fixed;
   left: 50%;

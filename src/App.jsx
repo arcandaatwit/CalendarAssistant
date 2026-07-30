@@ -10,8 +10,7 @@ import './index.css';
 const DEFAULT_PRIORITY_COLORS = { high: "#d33636", medium: "#f7b731", low: "#688bf2" };
 const DEFAULT_CATEGORIES = ["Work", "School", "Personal", "Kids", "Health", "Other"];
 
-// Backend/Google Tasks use "To-Do"/"Reminder"/"Scheduled"; the rest of the
-// frontend uses lowercase "todo"/"reminder"/"scheduled" — bridge here.
+// Backend/Google Tasks bridge here.
 export const TASK_TYPE_TO_API = { todo: "To-Do", reminder: "Reminder", scheduled: "Scheduled" };
 export const TASK_TYPE_FROM_API = { "To-Do": "todo", "Reminder": "reminder", "Scheduled": "scheduled" };
 
@@ -21,8 +20,7 @@ function load(key, fallback) {
 }
 
 // Email/password login already stores "userEmail" itself, but the Google
-// OAuth redirect only gives us a JWT — decode its payload (which already
-// carries the email, see googleAuthRoutes.js) so Profile can show it too.
+// OAuth redirect only gives us a JWt ecode so Profile can show it too.
 function decodeJwtEmail(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -78,7 +76,7 @@ function App() {
   };
 
   useEffect(() => {
-    // Google OAuth redirects back to /main?token=... — grab it before anything else runs.
+    // Google OAuth redirects back to /main?token=... GRAB 
     const params = new URLSearchParams(window.location.search);
     const tokenFromRedirect = params.get("token");
     if (tokenFromRedirect) {
@@ -89,8 +87,7 @@ function App() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    // Backfill userEmail from the JWT if it's missing — covers the Google
-    // sign-in flow (email/password login already sets this on its own).
+    // Backfill userEmail from the JWT if it's missing 
     if (!localStorage.getItem("userEmail")) {
       const email = decodeJwtEmail(token);
       if (email) localStorage.setItem("userEmail", email);
@@ -98,8 +95,7 @@ function App() {
 
     refreshTasks();
 
-    // Google-sourced events are read-only and never stored in our DB — they
-    // get appended on top of whatever's already loaded, tagged with a
+    // Google-sourced events are read-only and never stored in our DB 
     // "google-" id prefix so the UI can tell them apart.
     fetch("/api/google-events", { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
@@ -121,7 +117,7 @@ function App() {
       })
       .catch((err) => console.error("Error loading Google Calendar events:", err));
 
-    // Same idea for Google Tasks — read-only, tagged "google-", merged on top.
+    // Same idea for Google Tasks read-only, tagged "google-", merged on top.
     fetch("/api/google-tasks", { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((data) => {

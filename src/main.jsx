@@ -100,7 +100,7 @@ export default function MainPage() {
   }));
 
   // -----------------------------
-  // SCHEDULED/REMINDER TASKS → CALENDAR BLOCKS
+  // SCHEDULED/REMINDER TASKS CALENDAR BLOCKS
   // -----------------------------
   const taskEvents = safeTasks
     .filter((t) => t.date && !t.completed)
@@ -168,7 +168,7 @@ export default function MainPage() {
     })
       .then(res => res.json())
       .then(data => {
-        // Convert DB events → the shape addEvent.jsx/the calendar expect
+        // Convert DB eventstothe shape addEvent.jsx/the calendar expect
         const formatted = data.map(ev => ({
           id: ev.id,
           title: ev.title,
@@ -180,8 +180,7 @@ export default function MainPage() {
           priority: ev.priority,
         }));
 
-        // Keep any Google-sourced events (loaded separately, tagged "google-")
-        // instead of clobbering them with this DB-only fetch.
+        // Keep any Google-sourced events (loaded separately, tagged "google-").
         setEvents((prev) => [
           ...formatted,
           ...prev.filter((e) => String(e.id).startsWith("google-")),
@@ -198,7 +197,7 @@ export default function MainPage() {
   };
 
   // -----------------------------
-  // RENDER
+  // SHOW
   // -----------------------------
   return (
     <div className="app-container">

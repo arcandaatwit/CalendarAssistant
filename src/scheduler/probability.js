@@ -1,9 +1,9 @@
-// Analyzes calendar event history and returns schedule suggestions
+// Analyzes event history and returns schedule suggestions
 // based on frequency and time-of-day patterns.
 
 /**
  * Count how often each (dayOfWeek, hourBucket) pair appears in history.
- * dayOfWeek: 0 (Sun) – 6 (Sat)
+ * dayOfWeek: 0 – 6 is sun - sat
  * hourBucket: 0–23
  */
 export function buildFrequencyMap(events) {
@@ -35,7 +35,7 @@ export function getTopSlots(freqMap, topN = 10) {
 }
 
 /**
- * Score a candidate time slot (Date object) against the frequency map.
+ * Score a possible time slot (Date) against the frequency map.
  * Returns a 0–1 probability score.
  */
 export function scoreSlot(date, freqMap, maxCount) {
@@ -46,7 +46,7 @@ export function scoreSlot(date, freqMap, maxCount) {
 }
 
 /**
- * Build suggestions for the next `days` days (default 14).
+ * Build suggestions for the next `days`(default 2 weeks
  * Returns an array of suggested slots sorted by probability descending.
  *
  * @param {Array} events - raw calendar event objects with { title, start, end }
@@ -62,7 +62,7 @@ export function generateSuggestions(events, days = 14) {
   const now = new Date();
 
   for (let d = 0; d < days; d++) {
-    for (let h = 7; h <= 21; h++) { // only suggest waking hours
+    for (let h = 7; h <= 21; h++) { // adjust to only be when awake 7am - 9pm
       const candidate = new Date(now);
       candidate.setDate(now.getDate() + d);
       candidate.setHours(h, 0, 0, 0);
@@ -80,9 +80,7 @@ export function generateSuggestions(events, days = 14) {
 function toInterval(dateStr, startStr, endStr, fallbackMinutes, title) {
   if (!dateStr) return null;
   // dateStr may already be a full ISO timestamp from the DB
-  // (e.g. "2026-07-28T04:00:00.000Z") — strip it down to "YYYY-MM-DD" before
-  // gluing on a time, otherwise the result is a silently-Invalid Date and
-  // every conflict/overlap check against it just returns false.
+  // strip it down to "YYYY-MM-DD" 
   const dateOnly = String(dateStr).slice(0, 10);
   const start = new Date(`${dateOnly}T${startStr || "00:00"}`);
   const end = endStr
@@ -95,9 +93,7 @@ function overlaps(aStart, aEnd, bStart, bEnd) {
   return aStart < bEnd && bStart < aEnd;
 }
 
-// Loose match in either direction, case-insensitive — "gym" matches "Go to
-// the gym", and "go to the gym" would also match a history entry titled
-// just "gym".
+// Loose title match in either direction, case-insensitive for user convenience.
 function titlesMatch(a, b) {
   if (!a || !b) return false;
   return a.includes(b) || b.includes(a);
@@ -106,28 +102,12 @@ function titlesMatch(a, b) {
 /**
  * Find open (conflict-free) slots across real events + scheduled/reminder tasks.
  *
- * Ranking: if `title` is given and matches past events/tasks by name (e.g.
- * "gym" matching "Go to the gym"), suggestions are ranked by when *that*
- * activity has actually happened before — so a recurring weekday-morning gym
- * habit gets recommended weekday mornings. Without a name match, it falls
+ * Ranking: if `title` is given and matches past events/tasks by name, suggestions are ranked by when *that*
+ * activity has actually happened before. Without a name match, it falls
  * back to the general pattern: open slots outside the user's typical busy
  * hours are ranked higher. With no history at all, every open slot ranks
- * equally (by soonest) instead of being scored against nothing.
- *
- * @param {Array} events - { date, startTime, endTime, title } event objects
- * @param {Array} tasks  - { date, time, type, title } task objects
- * @param {string} title - the title of the event/task being scheduled
- * @param {string} date  - optional "YYYY-MM-DD"; if given, only that day is
- *                         searched instead of the whole `days` lookahead window
- * @param {number} [durationMinutes] - how long the new event should be. If
- *                         omitted, it's inferred from the average length of
- *                         title-matched past events (falling back to 60
- *                         minutes if there's no match to learn from).
- * @param {string} [category] - "work" keeps the whole slot within the 9-5
- *                         work day; "personal" keeps it entirely outside
- *                         9-5 (before work or in the evening). Any other
- *                         category is left unconstrained.
- */
+ * equally by soonest 
+**/
 const WORK_START_HOUR = 9;
 const WORK_END_HOUR = 17;
 
@@ -145,7 +125,7 @@ export function findOpenSlots({
 }) {
   const now = new Date();
 
-  // Everything that can block a candidate slot — past or future.
+  // Everything that can block a candidate slot
   const busy = [
     ...events.map((e) => toInterval(e.date, e.startTime, e.endTime, 60, e.title)),
     ...tasks
@@ -153,9 +133,9 @@ export function findOpenSlots({
       .map((t) => toInterval(t.date, t.time, null, 30, t.title)),
   ].filter(Boolean);
 
-  // History = only what's already happened — used to learn the user's
+  // History = only what's already happened used to learn the user's
   // typical pattern, kept separate from upcoming commitments so the score
-  // reflects actual past behavior, not just whatever's already on the books.
+  // reflects actual past behavior
   const history = busy.filter((b) => b.start < now);
 
   const needle = title.trim().toLowerCase();
@@ -239,7 +219,7 @@ export function findOpenSlots({
     }
   }
 
-  return candidates
+  return candidates //return the top suggestions
     .sort((a, b) => b.score - a.score || a.date - b.date)
     .slice(0, limit);
 }

@@ -11,8 +11,7 @@ function LoginPage() {
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Full-page redirect into the backend's OAuth flow — it issues our own
-  // JWT and sends the browser back to /main?token=... when done.
+  // Full-page redirect into the backend's OAuth flow
   const handleGoogleLogin = () => {
     window.location.href = "/auth/google";
   };
@@ -36,10 +35,10 @@ function LoginPage() {
         return;
       }
 
-      // ⭐ Save token
+      // Save token
       localStorage.setItem("token", data.token);
 
-      // ⭐ Save email (correct location!)
+      // Save email 
       localStorage.setItem("userEmail", data.user.email);
 
       navigate("/main");
@@ -48,7 +47,7 @@ function LoginPage() {
     }
   };
 
-  // ⭐ REGISTER
+  // REGISTER
   const handleRegister = async () => {
     if (!name || !email || !password || !confirmPassword) {
       alert("Please fill in all fields");
@@ -79,7 +78,7 @@ function LoginPage() {
     }
   };
 
-  // ⭐ LOGIN VIEW
+  //  LOGIN VIEW
   if (view === "login") {
     return (
       <div className="login-container">
@@ -119,7 +118,7 @@ function LoginPage() {
     );
   }
 
-  // ⭐ REGISTER VIEW
+  // REGISTER VIEW
   if (view === "register") {
     return (
       <div className="login-container">
@@ -179,7 +178,7 @@ function LoginPage() {
     );
   }
 
-  // ⭐ MAIN VIEW
+  // MAIN VIEW
   return (
     <div className="login-container">
       <h2>Calendar Assistant</h2>
