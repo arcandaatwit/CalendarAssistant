@@ -1,0 +1,82 @@
+README – Calendar Assistant Project
+
+Sonia Yahi  
+Allison Arcand
+
+1. Overview
+The Calendar Assistant is a full‑stack scheduling application that supports:
+Custom login (email + password)
+Google OAuth2 login
+Event creation
+Task creation
+Gemini AI chat assistant
+React frontend
+Node.js/Express backend
+MySQL database
+This ZIP contains all files needed to understand, run, and reproduce the project.
+
+2-GitHub Repository : 
+https://github.com/arcandaatwit/CalendarAssistant.git
+2. Folder Structure:
+
+/vsCode
+	settings.json
+/backend
+    Node.js + Express server
+    Authentication, Google API integration, Gemini API, CRUD routes
+
+/database
+    MySQL schema file
+
+/public
+   calicon.png
+
+/src
+    App.jsx
+    index.jsx
+    main.jsx
+    index.css
+    login.jsx
+    profile.jsx
+    taskPage.jsx
+    addEvent.jsx
+    ChatWidget.jsx
+    /scheduler
+        (scheduler-related components)
+
+
+3. How to Run the Project
+Backend
+Go to /backend
+Install dependencies:
+npm install
+Create a .env file containing:
+Google OAuth credentials
+Gemini API key
+MySQL connection info
+JWT secret
+Start the server:
+npm run dev 
+Frontend
+Go to the root folder (where /src is)
+Install dependencies:
+npm install
+Start the React app:
+npm run dev
+4. Requirements
+Node.js
+MySQL
+Google Cloud credentials
+Gemini API key
+5. Documentation Included
+Final project report : Includes Overview, Purpose, Summary, Components, Design Decisions, Milestones, Goals, Final Words, and References.
+System architecture diagram : Visual diagram showing frontend, backend, database, and Google/Gemini API interactions.
+Unknowns & concerns  :Short list of uncertainties encountered during development.
+Things we wished we knew : Lessons learned that would have saved time earlier in the project.
+QR codes for sources  : QR codes linking to documentation, APIs, and project references.
+
+6. Notes
+node_modules folders are removed
+Temporary files are removed
+Environment variables are not included
+Project can be reproduced using this README + documentation
